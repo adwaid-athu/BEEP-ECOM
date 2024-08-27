@@ -1628,7 +1628,8 @@ blockquote.text-white cite span {
   }
 }
 .main-nav {
-  margin-left: 2rem;
+
+  margin-left: 10rem;
   display: none;
 }
 .menu,
