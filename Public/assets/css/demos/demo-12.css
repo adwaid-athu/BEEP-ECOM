@@ -405,6 +405,23 @@
   }
 }
 
+.profile{
+  width:70px;
+  text-align: center;
+margin-left: 10px;
+}
+.profile a {
+  color: var(--A);
+  transition: color 200ms ease-in-out;
+}
+
+.profile a:hover {
+  color: var(--E);
+}
+
+
+
+
 :root {
   --A: #EEEEEE;
   --B: #DFDFDF;

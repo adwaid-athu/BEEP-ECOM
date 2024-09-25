@@ -1,0 +1,105 @@
+<%- include('../partials/admin/adminHeader.ejs') %>
+
+<div class="container">
+  <!-- Search Bar -->
+  <div class="search-container">
+    <form action="" method="GET">
+      <div class="search-input-container">
+        <input type="text" placeholder="Search by username or email" name="search" value="<%= search || '' %>">
+        <button type="submit" class="search-btn">
+          <i class="fa fa-search"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/></svg></i>
+        </button>
+      </div>
+    </form>
+  </div>
+  <div class="pagination">
+    <% for (let i = 1; i <= totalPages; i++) { %>
+      <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+        <a class="page-link" href="?page=<%= i %>&search=<%= search %>"><%= i %></a>
+      </li>
+    <% } %>
+  </div>
+  <!-- User List Table -->
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>User ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (data.length > 0) { %>
+          <% data.forEach(user => { %>
+            <tr>
+              <td><%= user.name %></td>
+              <td><%= user.email %></td>
+              <td><%= user.phone %></td>
+              <td>
+                <% if (user.isBlocked) { %>
+                  <button class="unblock-btn" onclick="handleUnblock(`<%= user._id %>`)">Unblock</button>
+                <% } else { %>
+                  <button class="block-btn" onclick="handleBlock('<%= user._id %>')">Block</button>
+                <% } %>
+                <button class="delete-btn" onclick="handleDelete('<%= user._id %>')">Delete</button>
+              </td>
+            </tr>
+          <% }); %>
+        <% } else { %>
+          <tr>
+            <td colspan="4">No users found.</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination">
+    <% for (let i = 1; i <= totalPages; i++) { %>
+      <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+        <a class="page-link" href="?page=<%= i %>&search=<%= search %>"><%= i %></a>
+      </li>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/admin/adminFooter.ejs') %>
+
+
+<script>
+  async function handleUnblock(userId){
+    fetch("/admin/unblockUser",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+      },
+      body:JSON.stringify({userId})
+    })
+    window.location.href = '/admin/users'
+  }
+  async function handleBlock(userId){
+    fetch("/admin/blockUser",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+      },
+      body:JSON.stringify({userId})
+    })
+    window.location.href = '/admin/users'
+  }
+  async function handleDelete(userId){
+    fetch("/admin/deleteUser",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+      },
+      body:JSON.stringify({userId})
+    })
+    window.location.href = '/admin/users'
+  }
+</script>
+
+

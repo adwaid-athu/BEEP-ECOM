@@ -162,13 +162,13 @@ h6,
   letter-spacing: -0.01em;
 }
 a {
-  color: var(--E);
+  color: var(--A);
   text-decoration: none;
   transition: color 0.3s ease;
 }
 a:hover,
 a:focus {
-  color: #bf8040;
+  color: var(--E);
   text-decoration: none;
 }
 .link-underline {
@@ -12894,6 +12894,7 @@ button:focus {
   max-width: 575px;
   margin-left: auto;
   margin-right: auto;
+  margin-top: 12%;
   background-color: #fff;
   padding: 2.2rem 2rem 4.4rem;
   box-shadow: 0 3px 16px rgba(51, 51, 51, 0.1);

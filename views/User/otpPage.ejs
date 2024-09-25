@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/plugins/owl-carousel/owl.carousel.css">
+    <link rel="stylesheet" href="/assets/css/plugins/magnific-popup/magnific-popup.css">
+    <!-- Main CSS File -->
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/demos/demo-12.css">
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/sweetalert2@7.12.15/dist/sweetalert2.min.css'></link>  
+    <style>
+        #timer-display {
+            font-size: 0.9em;
+            margin-top: 10px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <main class="main">
+        <nav aria-label="breadcrumb" class="breadcrumb-nav border-0 mb-0">
+            <div class="container">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/register">Register</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">OTP</li>
+                </ol>
+            </div><!-- End .container -->
+        </nav><!-- End .breadcrumb-nav -->
+
+        <div class="login-page bg-image pt-8 pb-8 pt-md-15 pb-md-15 pt-lg-17 pb-lg-17">
+            <div class="container">
+                <div class="form-box">
+                    <form id="otpForm" action="/otpPage" method="post">
+                        <h2><span>OTP</span></h2>
+                        <br>
+                    
+                        <div class="form-group">
+                            <label>Enter Your OTP*</label>
+                            <input type="text" class="form-control" name="otp" id="otp" required>
+                        </div><!-- End .form-group -->
+                    
+                        <div class="form-footer">
+                            <button type="submit" class="btn btn-outline-primary-2">
+                                <span>Verify</span>
+                            </button>
+                           <div id="OtpStat" class="text-danger"></div>
+                            <a  id="resend-button" class="resend-otp" onclick="resendOtp(event)">Resend OTP</a>
+                            <div id="timer-display"></div>
+                        </div>
+                    </form>
+                    
+                    
+                </div><!-- .End .tab-pane -->
+            </div>
+        </div>			
+    </main>
+
+    <script src="/assets/js/jquery.min.js"></script>
+    <script src="/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/jquery.hoverIntent.min.js"></script>
+    <script src="/assets/js/jquery.waypoints.min.js"></script>
+    <script src="/assets/js/superfish.min.js"></script>
+    <script src="/assets/js/owl.carousel.min.js"></script>
+    <script src="/assets/js/bootstrap-input-spinner.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+ 
+    <script src="/assets/js/main.js"></script>
+
+    <script>
+
+    document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('otpForm');
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    submitButton.addEventListener('click', (event) => {
+        event.preventDefault(); 
+        const otpInput = document.getElementById('otp').value;
+        console.log(otpInput)
+
+        if (otpInput === "") {
+            Swal.fire({
+                icon: "error",
+                title: "Invalid OTP",
+                text: "Please enter the OTP.",
+            });
+            return false; 
+        }
+
+        fetch('/otpPage', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ otp: otpInput }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "OTP Verified Successfully",
+                    showConfirmButton: false,
+                    timer: 1500,
+                }).then(() => {
+                    window.location.href = '/';
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: data.message,
+                });
+            }
+        })
+        .catch(() => {
+            Swal.fire({
+                icon: "error",
+                title: "Invalid OTP",
+                text: "Please try again.",
+            });
+        });
+
+        return false; 
+    });
+});
+    </script>
+    
+    <script>
+   function initializeTimer() {
+    let timer = 40; 
+    const timerDisplay = document.getElementById('timer-display');
+    const resendButton = document.getElementById('resend-button');
+    let interval;
+
+    function updateTimer() {
+        if (timer > 0) { 
+            timer--;
+            timerDisplay.textContent = `Resend available in ${timer} seconds`;
+            resendButton.style.pointerEvents = 'none';
+            resendButton.style.opacity = '0.5';
+        } else {
+            clearInterval(interval);
+            timerDisplay.textContent = 'You can now resend the OTP';
+            resendButton.style.pointerEvents = 'auto';
+            resendButton.style.opacity = '1';
+        }
+    }
+
+    function startTimer() {
+        timer = 40; 
+        clearInterval(interval);
+        interval = setInterval(updateTimer, 1000);
+        updateTimer();
+    }
+
+    resendButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (timer === 0) {
+            console.log('Resending OTP...');
+            startTimer();
+        }
+    });
+
+    startTimer();
+}
+
+   
+    document.addEventListener('DOMContentLoaded', initializeTimer);
+    </script>
+
+    <script>
+        function resendOtp(e){
+            e.preventDefault()
+
+            fetch("/resendOtp",{
+                method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(),
+        }).then(response=>response.json())
+        .then(data=>{
+            if(data.success){
+                Swal.fire({
+                    icon: "success",
+                    title: "OTP Resend Successfully",
+                    showConfirmButton: false,
+                    timer: 1500,
+                })
+            }else{
+                Swal.fire({
+                    icon: "error",
+                    title: data.message,
+                    showConfirmButton: true,
+                
+                })
+
+            }
+        })
+    }
+    </script>
+</body>
+</html>

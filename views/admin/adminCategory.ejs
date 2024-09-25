@@ -1,0 +1,441 @@
+<%- include('../partials/admin/adminHeader.ejs') %>
+
+<div class="container">
+  <h1>Category Management</h1>
+
+  
+
+  <div class="mid container">
+    <div class="add-category-container mb-4 p-4 bg-light rounded shadow-sm">
+      <h2>Add New Category</h2>
+      <form id="addCategoryForm">
+        <div class="mb-3">
+          <label for="categoryName" class="form-label">Category Name:</label>
+          <input type="text" id="categoryName" name="categoryName" class="form-control" />
+          <div class="text-danger" id="nameError" name="errorMessage"></div>
+        </div>
+        <div class="mb-3">
+          <label for="categoryDescription" class="form-label">Description:</label>
+          <textarea
+            id="categoryDescription"
+            name="categoryDescription"
+            class="form-control"
+          ></textarea>
+          <div class="text-danger" id="descriptionError" name="errorMessage"></div>
+        </div>
+        <button type="submit" onsubmit="handleFormSubmit(event)" class="btn btn-success">Add Category</button>
+      </form>
+    </div>
+
+    <div class="categories-list">
+      <h2>Categories</h2>
+      <div class="search-container">
+        <form action="" method="GET">
+          <div class="search-input-container">
+            <input type="text" placeholder="Search Category" name="search" value="<%= search || '' %>">
+            <button type="submit" class="search-btn">
+              <i class="fa fa-search"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/></svg></i>
+            </button>
+          </div>
+        </form>
+      </div>
+      <div class="pagination">
+        <% for (let i = 1; i <= totalPages; i++) { %>
+          <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+            <a class="page-link" href="?page=<%= i %>&search=<%= search %>"><%= i %></a>
+          </li>
+        <% } %>
+      </div>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% categories.forEach(category => { %>
+          <tr>
+            <td><%= category.name %></td>
+            <td><%= category.description %></td>
+            <td>
+              <button
+  onclick="<%= category.isListed ? 'handleUnlist(\'' + category._id + '\')' : 'handleList(\'' + category._id + '\')' %>"
+  class="btn <%= category.isListed ? 'btn-secondary' : 'btn-success' %> list">
+  <%= category.isListed ? 'Unlist' : 'List' %>
+</button>
+
+
+              <button class="btn btn-warning edit" onclick="window.location.href='/admin/editCategory/<%=category._id%>'">Edit</button>
+
+              <button
+                onclick="handleDelete('<%= category._id %>')"
+                class="btn btn-danger delete"
+              >Delete</button>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <% for (let i = 1; i <= totalPages; i++) { %>
+          <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+            <a class="page-link" href="?page=<%= i %>&search=<%= search %>"><%= i %></a>
+          </li>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/admin/adminFooter.ejs') %>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+
+  document.getElementById("addCategoryForm").addEventListener("submit", handleFormSubmit);
+
+  function handleFormSubmit(event) {
+    event.preventDefault(); 
+
+    if (!validateForm()) {
+      return;
+    }
+
+    const name = document.getElementById("categoryName").value;
+    const description = document.getElementById("categoryDescription").value;
+
+    fetch("/admin/addCategory",{
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name, description })
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(err => {
+          throw new Error(err.error);
+        });
+      }
+      return response.json();
+    })
+    .then(data => {
+      location.reload();
+    })
+    .catch(error => {
+      if (error.message === "Category already Exists") {
+        Swal.fire({
+          icon: "error",
+          title: "Oops",
+          text: "Category already exists"
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Oops",
+          text: "An error occurred while adding the category"
+        });
+      }
+    });
+  }
+  function validateForm() {
+    clearErrorMessage();
+
+    const name = document.getElementById("categoryName").value.trim();
+    const description = document.getElementById("categoryDescription").value.trim();
+    let isValid = true; 
+
+    if (name === "") {
+      displayErrorMessage("nameError", "Please enter a name");
+      isValid = false;
+    } else if (!/^[a-zA-Z\s]+$/.test(name)) {
+      displayErrorMessage("nameError", "Category name should only contain alphabetic characters");
+      isValid = false;
+    }
+
+    if (description === "") {
+      displayErrorMessage("descriptionError", "Please enter a description");
+      isValid = false;
+    }
+
+    return isValid;
+  }
+  function displayErrorMessage(elementId, message) {
+    var errorElement = document.getElementById(elementId);
+    errorElement.textContent = message;
+    errorElement.style.display = "block";
+  }
+  function clearErrorMessage() {
+    const errorElements = document.querySelectorAll("[name='errorMessage']");
+    errorElements.forEach((element) => {
+      element.innerText = "";
+      element.style.display = 'none';
+    });
+  }
+  function handleUnlist(id){
+fetch("/admin/unlistCategory", {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({id})
+    }).then(response=>response.json())
+    .then(data=>{
+      if(data.success){
+        window.location.reload("/admin/category")
+      }else{
+        Swal.fire({
+          icon: "error",
+          title: "Oops",
+          text: data.error
+        });
+      }
+    })
+  }
+  function handleList(id){
+fetch("/admin/listCategory",{
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({id})
+    }).then(response=>response.json())
+    .then(data=>{
+      if(data.success){
+        window.location.reload("/admin/category")
+      }else{
+        Swal.fire({
+          icon: "error",
+          title: "Oops",
+          text: data.error
+        });
+      }
+    })
+  }
+function handleDelete(id){
+  fetch("/admin/deleteCategory",{
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({id})
+    }).then(response=>response.json())
+    .then(data=>{
+      if(data.success){
+        window.location.reload("/admin/category")
+      }else{
+        Swal.fire({
+          icon: "error",
+          title: "Oops",
+          text: data.error
+        });
+      }
+    })
+}
+</script>
+
+<style>
+  .edit,.delete,.list{
+    margin-top: 10px;
+  }
+  /* Container for the whole page */
+
+  /* Page title */
+  h1 {
+    margin-bottom: 20px;
+    font-size: 28px;
+    color: #333;
+  }
+
+  /* Search Bar */
+  .search-container {
+    margin-bottom: 20px;
+    justify-content: center;
+  }
+
+  .search-container form {
+    display: flex;
+    align-items: center;
+  }
+
+  .search-container input[type="text"] {
+    padding: 10px;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+  }
+
+  .search-container button {
+    margin-left: 5px;
+    padding: 10px 15px;
+    border: none;
+    background-color: #333;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+
+  .search-container button:hover {
+    background-color: #0056b3;
+  }
+  .search-input-container {
+    display: contents;
+}
+
+  /* Add Category Form */
+  .add-category-container {
+    margin-bottom: 30px;
+    background-color: #fff !important;
+    padding: 20px;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .add-category-container h2 {
+    font-size: 22px;
+    margin-bottom: 15px;
+  }
+
+  .add-category-container form div {
+    margin-bottom: 15px;
+  }
+
+  .add-category-container label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .add-category-container input,
+  .add-category-container textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    font-size: 16px;
+  }
+
+  .add-category-container textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .add-category-container button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  .add-category-container button:hover {
+    background-color: #218838;
+  }
+
+  /* Categories List */
+  .categories-list {
+    margin-top: 30px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .categories-list h2 {
+    font-size: 22px;
+    margin-bottom: 15px;
+  }
+
+  /* Table Styling */
+  .categories-list table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+  .categories-list table thead {
+    background-color: #007bff;
+    color: #333;
+  }
+
+  .categories-list table thead th {
+    padding: 12px;
+  }
+
+  .categories-list table tbody td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .categories-list table tbody tr:hover {
+    background-color: #f2f2f2;
+  }
+
+  .categories-list button {
+    
+    padding: 8px 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+
+  .categories-list button:hover {
+    opacity: 0.9;
+  }
+
+  .categories-list .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+  }
+
+  .categories-list .btn-warning {
+    background-color: #ffc107;
+    color: white;
+  }
+
+  .categories-list .btn-danger {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  /* Pagination */
+  .pagination {
+    display: flex;
+    margin-top: 20px;
+  }
+
+  .pagination a {
+    margin: 0 5px;
+    padding: 8px 12px;
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+  }
+
+  .pagination a:hover {
+    background-color: #007bff;
+    color: white;
+  }
+
+  .pagination a.active {
+    background-color: #007bff;
+    color: white;
+  }
+  .categories-list table tbody td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    word-wrap: break-word; /* Break long words */
+    max-width: 300px;      /* Limit width to avoid stretching */
+}
+</style>

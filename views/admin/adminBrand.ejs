@@ -1,0 +1,157 @@
+<%- include('../partials/admin/adminHeader.ejs') %>
+
+<div class="container">
+    <h2>Brand Managment </h2>
+  <!-- Add Brand Form -->
+  <div class="add-category-container mb-4 p-4 bg-light rounded shadow-sm">
+    <h4>Add Brand</h4>
+    <form id="addBrandForm">
+      <div class="mb-3">
+        <label for="BrandName" class="form-label"> Brand Name:</label>
+        <input type="text" id="brandName" name="brandName" class="form-control" />
+        <div class="text-danger" id="nameError" name="errorMessage"></div>
+      </div>
+      <button type="submit" class="btn btn-success">Add Brand</button>
+    </form>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-container">
+    <form action="" method="GET">
+      <div class="search-input-container">
+        <input type="text" placeholder="Search by brand name" name="search" value="<%= search || '' %>">
+        <button type="submit" class="search-btn">
+          <i class="fa fa-search"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/></svg></i>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination">
+    <% for (let i = 1; i <= totalPages; i++) { %>
+      <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+        <a class="page-link" href="?page=<%= i %>&search=<%= search %>"><%= i %></a>
+      </li>
+    <% } %>
+  </div>
+
+  <!-- Brand List Table -->
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Brand Name</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (data.length > 0) { %>
+          <% data.forEach(brand => { %>
+            <tr>
+              <td><%= brand.brandName %></td>
+              <td>
+                <% if (brand.isBlocked) { %>
+                  <button class="unblock-btn" onclick="handleUnblock('<%= brand._id %>')">Unblock</button>
+                <% } else { %>
+                  <button class="block-btn" onclick="handleBlock('<%= brand._id %>')">Block</button>
+                <% } %>
+                <button class="delete-btn" onclick="handleDelete('<%= brand._id %>')">Delete</button>
+              </td>
+            </tr>
+          <% }); %>
+        <% } else { %>
+          <tr>
+            <td colspan="3">No brands found.</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination">
+    <% for (let i = 1; i <= totalPages; i++) { %>
+      <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+        <a class="page-link" href="?page=<%= i %>&search=<%= search %>"><%= i %></a>
+      </li>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/admin/adminFooter.ejs') %>
+
+<script>
+
+document.getElementById("addBrandForm").addEventListener("submit", handleFormSubmit);
+
+async function handleFormSubmit(event) {
+  event.preventDefault();
+
+  const brandName = document.getElementById("brandName").value;
+  const nameError = document.getElementById("nameError");
+
+
+  nameError.textContent = "";
+
+
+  if (!brandName.trim()) {
+    nameError.textContent = "Brand name cannot be empty!";
+    return;
+  }
+
+
+  fetch("/admin/addBrand", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ brandName })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      window.location.href = '/admin/brand';
+    } else {
+      nameError.textContent = "Failed to add brand. Please try again.";
+    }
+  })
+  .catch(error => {
+    nameError.textContent = "An error occurred while adding the brand.";
+    console.error("Error:", error);
+  });
+}
+
+  async function handleUnblock(brandId) {
+    fetch("/admin/unblockBrand", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ brandId })
+    });
+    window.location.href = '/admin/brands';
+  }
+
+  async function handleBlock(brandId) {
+    fetch("/admin/blockBrand", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ brandId })
+    });
+    window.location.href = '/admin/brands';
+  }
+
+  async function handleDelete(brandId) {
+    fetch("/admin/deleteBrand", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ brandId })
+    });
+    window.location.href = '/admin/brands';
+  }
+</script>
