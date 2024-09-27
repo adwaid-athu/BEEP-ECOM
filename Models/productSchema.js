@@ -13,7 +13,8 @@ const productSchema = new Schema({
         required:true,
     },
     brand: {
-        type:String,
+        type:Schema.Types.ObjectId,
+        ref:"Brand",
         required:true,
     },
     category: {
@@ -46,6 +47,14 @@ const productSchema = new Schema({
         enum:["Available","out of stock","Discountinued"],
         required:true,
         default:"Available"
+    },
+    createdAt: {
+        type: Date,
+        default:Date.now
+    },
+    isBlocked: {
+        type: Boolean,
+        default: false
     },
 });
 

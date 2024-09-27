@@ -2,7 +2,7 @@ const express = require("express")
 const router = express.Router()
 const userController = require("../controller/user/userController")
 const auth= require("../Middleware/auth")
-const passport = require("passport")
+const passport = require("passport") 
 
 router.get("/",userController.loadUserHome)
 router.get("/login",auth.isLoggedOut,userController.loadUserLogin)
@@ -18,6 +18,8 @@ function storeUserIdInSession(req, res) {
     }} 
 router.get("/auth/google/callback",passport.authenticate("google",{failureRedirect:"/register"}),storeUserIdInSession)
 router.get("/logout",userController.logout)
+router.get("/shop",userController.loadShop)
+router.get("/product",userController.loadProduct)
 
 
 router.post("/register",userController.userRegister)

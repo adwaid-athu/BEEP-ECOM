@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 50px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 15px;
+            display: block;
+            color: #444;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        #imagePreviewContainer {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .image-wrapper {
+            position: relative;
+            margin: 5px;
+        }
+
+        .image-wrapper img {
+            width: 100px;
+            height: auto;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .image-wrapper img:hover {
+            transform: scale(1.05);
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .remove-btn:hover {
+            background: rgba(255, 0, 0, 0.9);
+        }
+
+
+        #cropperModal {
+            display: none;
+            position: fixed;
+            top: 30vh;
+            left: 55vh;
+            width: 20%;
+            height: 20%;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #cropperContainer {
+            background: rgb(0, 0, 0);
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        #cropImage {
+            max-width: 100%;
+        }
+
+        #cropBtn,
+        #closeCropper {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Edit Product</h2>
+
+        <form id="productForm"  action="/admin/editProduct/<%= product._id %>" method="POST"
+            onsubmit="return validateForm()">
+            <label for="productName">Product Name</label>
+            <input type="text" id="productName" name="productName" value="<%= product.productName %>">
+            <div id="productNameError" class="error"></div>
+            <input type="hidden" name="idd" value="<%= product._id %>">
+
+            <label for="productDescription">Product Description</label>
+            <textarea id="productDescription" name="productDescription" rows="3" ><%= product.description %></textarea>
+            <div id="productDescriptionError" class="error"></div>
+
+            <label for="productPrice">Price</label>
+            <input type="number" id="regularPrice" name="regularPrice" value="<%= product.regularPrice %>">
+            <div id="productPriceError" class="error"></div>
+
+            <label for="productSalePrice">Sale Price</label>
+            <input type="number" id="salePrice" name="salePrice" value="<%= product.salePrice %>">
+            <div id="productSalePriceError" class="error"></div>
+
+            <label for="productQuantity">Quantity</label>
+            <input type="number" id="quantity" name="quantity" value="<%= product.quantity%>">
+            <div id="productQuantityError" class="error"></div>
+
+            <label for="productCategory">Category</label>
+            <select id="productCategory" name="productCategory">
+                <% categories.forEach(category=> { %>
+                    <option value="<%= category._id %>" <%= category._id.equals(product.category) ? 'selected' : '' %> >
+                        <%= category.name %>
+                    </option>
+                    <% }) %>
+            </select>
+            <div id="productCategoryError" class="error"></div>
+
+            <label for="productBrand">Brand</label>
+            <select id="productBrand" name="productBrand">
+                <% brands.forEach(brand=> { %>
+                    <option value="<%= brand._id %>">
+                        <%= brand.brandName %>
+                    </option>
+                    <% }) %>
+            </select>
+            <div id="productBrandError" class="error"></div>
+
+            <button type="submit">Update Product</button>
+        </form>
+    </div>
+
+
+    <div id="cropperModal">
+        <div id="cropperContainer">
+            <img id="cropImage" src="" alt="Crop Image">
+            <button id="cropBtn">Crop</button>
+            <button id="closeCropper">Close</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // let cropper;
+        // let currentImageSrc;
+        // document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+
+        function validateForm() {
+            let isValid = true;
+
+
+            const productName = document.getElementById('productName').value.trim();
+            if (!productName) {
+                isValid = false;
+                document.getElementById('productNameError').textContent = 'Product name is required.';
+            } else {
+                document.getElementById('productNameError').textContent = '';
+            }
+
+            const productDescription = document.getElementById('productDescription').value.trim();
+            if (!productDescription) {
+                isValid = false;
+                document.getElementById('productDescriptionError').textContent = 'Product description is required.';
+            } else {
+                document.getElementById('productDescriptionError').textContent = '';
+            }
+
+
+            const regularPrice = parseFloat(document.getElementById('regularPrice').value);
+            if (isNaN(regularPrice) || regularPrice <= 0) {
+                isValid = false;
+                document.getElementById('productPriceError').textContent = 'Price must be greater than 0.';
+            } else {
+                document.getElementById('productPriceError').textContent = '';
+            }
+
+
+            const salePrice = parseFloat(document.getElementById('salePrice').value);
+            if (!isNaN(salePrice) && salePrice > regularPrice) {
+                isValid = false;
+                document.getElementById('productSalePriceError').textContent = 'Sale price must be less than or equal to the regular price.';
+            } else {
+                document.getElementById('productSalePriceError').textContent = '';
+            }
+
+
+            const quantity = parseInt(document.getElementById('quantity').value);
+            if (isNaN(quantity) || quantity <= 0) {
+                isValid = false;
+                document.getElementById('productQuantityError').textContent = 'Quantity must be a positive number.';
+            } else {
+                document.getElementById('productQuantityError').textContent = '';
+            }
+
+
+            const productCategory = document.getElementById('productCategory').value;
+            if (!productCategory) {
+                isValid = false;
+                document.getElementById('productCategoryError').textContent = 'Product category is required.';
+            } else {
+                document.getElementById('productCategoryError').textContent = '';
+            }
+
+
+            const productBrand = document.getElementById('productBrand').value;
+            if (!productBrand) {
+                isValid = false;
+                document.getElementById('productBrandError').textContent = 'Product brand is required.';
+            } else {
+                document.getElementById('productBrandError').textContent = '';
+            }
+
+
+            // const imageFiles = document.getElementById('fileInput').files;
+            // if (imageFiles.length < 3) {
+            //     isValid = false;
+            //     document.getElementById('productImageError').textContent = 'At least 3 product image is required.';
+            // } else {
+            //     document.getElementById('productImageError').textContent = '';
+            // }
+
+            return isValid;
+        }
+
+        // function handleFileUpload(event) {
+        //     const files = event.target.files;
+        //     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        //     const previewContainer = document.getElementById('imagePreviewContainer');
+
+        //     document.getElementById('productImageError').textContent = '';
+
+        //     for (let i = 0; i < files.length; i++) {
+        //         if (!allowedTypes.includes(files[i].type)) {
+        //             alert('Only image files (jpg, jpeg, png, gif) are allowed!');
+        //             event.target.value = '';
+        //             return;
+        //         }
+
+        //         const file = files[i];
+        //         const reader = new FileReader();
+
+        //         reader.onload = function (e) {
+        //             const imgElement = document.createElement('img');
+        //             imgElement.src = e.target.result;
+
+        //             const removeBtn = document.createElement('button');
+        //             removeBtn.innerHTML = 'X';
+        //             removeBtn.classList.add('remove-btn');
+
+        //             const imgWrapper = document.createElement('div');
+        //             imgWrapper.classList.add('image-wrapper');
+        //             imgWrapper.appendChild(imgElement);
+        //             imgWrapper.appendChild(removeBtn);
+
+        //             previewContainer.appendChild(imgWrapper);
+
+
+        //             imgElement.addEventListener('click', function () {
+        //                 openCropper(e.target.result);
+        //             });
+
+        //             removeBtn.addEventListener('click', function () {
+        //                 previewContainer.removeChild(imgWrapper);
+        //             });
+        //         };
+
+        //         reader.readAsDataURL(file);
+        //     }
+        // }
+
+        // function openCropper(imageSrc) {
+        //     currentImageSrc = imageSrc;
+        //     document.getElementById('cropImage').src = imageSrc;
+        //     document.getElementById('cropperModal').style.display = 'flex';
+
+        //     const cropImage = document.getElementById('cropImage');
+        //     cropper = new Cropper(cropImage, {
+        //         aspectRatio: 1 / 1,
+        //         viewMode: 1,
+        //     });
+        // }
+
+        // document.getElementById('cropBtn').addEventListener('click', function () {
+        //     const croppedCanvas = cropper.getCroppedCanvas();
+        //     const croppedImage = croppedCanvas.toDataURL();
+
+
+        //     const imgWrappers = document.querySelectorAll('.image-wrapper img');
+        //     imgWrappers.forEach(img => {
+        //         if (img.src === currentImageSrc) {
+        //             img.src = croppedImage;
+        //         }
+        //     });
+
+
+        //     closeCropper();
+        // });
+
+        // document.getElementById('closeCropper').addEventListener('click', closeCropper);
+
+        // function closeCropper() {
+        //     document.getElementById('cropperModal').style.display = 'none';
+        //     if (cropper) {
+        //         cropper.destroy();
+        //         cropper = null;
+        //     }
+        // }
+    </script>
+</body>
+
+</html>

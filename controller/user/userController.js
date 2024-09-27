@@ -1,4 +1,5 @@
 const User = require("../../Models/userSchema");
+const Product = require("../../Models/productSchema")
 const express = require("express");
 const bcrypt = require("bcrypt");
 const env = require("dotenv").config();
@@ -92,12 +93,12 @@ const securePassword = async (password) => {
     const passwordHash = await bcrypt.hash(password, 10);
 
     return passwordHash;
-  } catch (error) {}
+  } catch (error) { }
 };
 const verifyOtp = async (req, res) => {
   try {
     const { otp } = req.body;
-    
+
 
     console.log(req.body);
 
@@ -164,11 +165,11 @@ const userLogin = async (req, res) => {
       const isMatch = await bcrypt.compare(password, userData.password);
 
       if (isMatch) {
-        if(userData.isBlocked==false){
-        req.session.user = userData._id;
-        return res.status(200).json({ success: true });
-        }else{
-          return res.status(400).json({message:"User Is Blocked"})
+        if (userData.isBlocked == false) {
+          req.session.user = userData._id;
+          return res.status(200).json({ success: true });
+        } else {
+          return res.status(400).json({ message: "User Is Blocked" })
         }
       } else {
         return res.status(400).json({ message: "Check your Password" });
@@ -210,6 +211,37 @@ const logout = (req, res) => {
   });
 };
 
+const loadShop = async (req, res) => {
+  try {
+    const products = await Product.find()
+      .populate('category')
+      .exec();
+
+    const filteredProducts = products.filter(product => product.category.isListed);
+
+    res.render('shop', { products: filteredProducts });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+}
+
+
+const loadProduct = async (req, res) => {
+  try {
+    const {productId} = req.query
+    const product = await Product.findById(productId)
+      .populate('category')
+      .exec();
+
+    res.render('product', {product});
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+}
+
+
 module.exports = {
   loadUserHome,
   loadUserLogin,
@@ -221,4 +253,6 @@ module.exports = {
   resendOtp,
   loadOtp,
   logout,
+  loadShop,
+  loadProduct
 };

@@ -130,7 +130,7 @@ async function handleFormSubmit(event) {
       },
       body: JSON.stringify({ brandId })
     });
-    window.location.href = '/admin/brands';
+    window.location.href = '/admin/brand';
   }
 
   async function handleBlock(brandId) {
@@ -141,17 +141,30 @@ async function handleFormSubmit(event) {
       },
       body: JSON.stringify({ brandId })
     });
-    window.location.href = '/admin/brands';
+    window.location.href = '/admin/brand';
   }
 
   async function handleDelete(brandId) {
-    fetch("/admin/deleteBrand", {
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Delete',
+    cancelButtonText: 'Cancel'
+  });
+
+  if (result.isConfirmed) {
+    const response = await fetch("/admin/deleteBrand", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ brandId })
     });
-    window.location.href = '/admin/brands';
+        window.location.href = '/admin/brand';
   }
+}
+
 </script>

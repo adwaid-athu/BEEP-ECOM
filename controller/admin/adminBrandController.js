@@ -1,3 +1,4 @@
+const status = require("statuses");
 const Brand = require("../../Models/brandSchema");
 const Product = require("../../Models/productSchema");
 
@@ -46,8 +47,46 @@ const addBrand = async (req,res)=>{
  
 }
 
+const unblockBrand = async(req,res)=>{
+  try {
+    const {brandId} = req.body
+    if(brandId){
+      await Brand.updateOne({_id:brandId},{$set:{isBlocked:false}})
+      res.status(200).json({success:true})
+    }
+  } catch (error) {
+    res.status(500).json({success:false})
+  }
+}
+
+const blockBrand = async(req,res)=>{
+  try {
+    const {brandId} = req.body
+    if(brandId){
+      await Brand.updateOne({_id:brandId},{$set:{isBlocked:true}})
+      res.status(200).json({success:true})
+    }
+  } catch (error) {
+    res.status(500).json({success:false})
+  }
+}
+
+const deleteBrand = async(req,res)=>{
+  try {
+    const {brandId} = req.body
+    if(brandId){
+      await Brand.deleteOne({_id:brandId})
+      res.status(200).json({success:true})
+    }
+  } catch (error) {
+    res.status(500).json({success:false})
+  }
+}
+
 module.exports = {
   loadBrand,
   addBrand,
-
+  unblockBrand,
+  blockBrand,
+  deleteBrand
 };

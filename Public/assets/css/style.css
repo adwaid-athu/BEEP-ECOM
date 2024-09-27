@@ -10507,7 +10507,6 @@ button:focus {
 .product-gallery-item:before {
   opacity: 0;
   visibility: hidden;
-  border: 0.1rem solid var(--E);
 }
 .product-gallery-item:after {
   visibility: visible;
@@ -16337,7 +16336,7 @@ button:focus {
 }
 .header-middle.sticky-header{
   height:110px;
-  background-color: #54617900
+  background-color: var(--D)
 
 }
 .login-page{
