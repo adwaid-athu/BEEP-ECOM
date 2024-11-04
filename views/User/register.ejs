@@ -158,7 +158,7 @@
                 }).then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            window.location.href = "/OTP";
+                            window.location.href = "/otp";
                         } else {
                             userStat.textContent = data.message;
                         }

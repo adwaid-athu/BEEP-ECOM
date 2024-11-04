@@ -227,6 +227,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        let uploadFiles=[]
         let cropper;
         let currentImageSrc;
         document.getElementById('fileInput').addEventListener('change', handleFileUpload);
@@ -315,6 +316,10 @@
 
             document.getElementById('productImageError').textContent = '';
 
+             uploadedFiles = [];
+            previewContainer.innerHTML = '' 
+
+
             for (let i = 0; i < files.length; i++) {
                 if (!allowedTypes.includes(files[i].type)) {
                     alert('Only image files (jpg, jpeg, png, gif) are allowed!');
@@ -323,6 +328,7 @@
                 }
 
                 const file = files[i];
+                uploadedFiles.push(file);
                 const reader = new FileReader();
 
                 reader.onload = function (e) {
@@ -347,6 +353,14 @@
 
                     removeBtn.addEventListener('click', function () {
                         previewContainer.removeChild(imgWrapper);
+                        const index = uploadedFiles.indexOf(file);
+                        if (index > -1) {
+                            uploadedFiles.splice(index, 1); 
+                        }
+
+                        const dataTransfer = new DataTransfer();
+                        uploadedFiles.forEach(uploadedFile => dataTransfer.items.add(uploadedFile));
+                        document.getElementById('fileInput').files = dataTransfer.files;
                     });
                 };
 

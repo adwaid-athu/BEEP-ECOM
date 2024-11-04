@@ -10,6 +10,10 @@ const addressSchema = new Schema({
   },
   address: [
     {
+      addressNo:{
+        type:Number,
+        required:true
+      },
       addressType: {
         type: String,
         required: true,
@@ -46,4 +50,4 @@ const addressSchema = new Schema({
   ],
 });
 
-const Address = mongoose.model("Address", addressSchema);
+module.exports = mongoose.model('Address',addressSchema)

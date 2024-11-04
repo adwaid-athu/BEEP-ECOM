@@ -6529,6 +6529,7 @@ p {
   color: #666;
 }
 .product-price {
+
   display: flex;
   align-items: center;
   flex-flow: wrap;
@@ -8471,7 +8472,7 @@ p {
   line-height: 1.5;
   font-weight: 300;
   color: #777;
-  background-color:var(--A);
+  background-color:#fff;
   border: 1px solid #ebebeb;
   border-radius: 0;
   margin-bottom: 2rem;
@@ -16370,6 +16371,11 @@ a.resend-otp {
 .otpform-box .btn {
   min-width: 115px;
 }
+h5.addressAction {
+  margin-left: 29rem;
+}
+
+
 :root {
   --A: #EEEEEE;
   --B: #DFDFDF;

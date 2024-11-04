@@ -15,6 +15,8 @@
     <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="/assets/css/plugins/owl-carousel/owl.carousel.css">
     <link rel="stylesheet" href="/assets/css/plugins/magnific-popup/magnific-popup.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
     <!-- Main CSS File -->
     <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="/assets/css/demos/demo-12.css">
@@ -35,7 +37,6 @@
                             <img src="assets/images/Beep.png" alt="Beep Logo" width="132" height="32">
                         </a>
                     </div><!-- End .header-left -->
-
                     <div class="header-right">
                         <nav class="main-nav">
                             <ul class="menu sf-arrows">
@@ -63,23 +64,25 @@
 
                         <div class="header-search">
                             <a href="#" class="search-toggle" role="button"><i class="icon-search"></i></a>
-                            <form action="#" method="get">
+                            <form action="/shop" method="get"> <!-- Change action to /shop -->
                                 <div class="header-search-wrapper">
-                                    <label for="q" class="sr-only">Search</label>
+                                    <label for="q" class="sr-only"></label>
                                     <input type="search" class="form-control" name="q" id="q" placeholder="Search in..." required>
+                                    <button type="submit" class="btn btn-search"></button> <!-- Add a search button -->
                                 </div><!-- End .header-search-wrapper -->
                             </form>
                         </div><!-- End .header-search -->
                         
+                        
                         <a href="wishlist.html" class="wishlist-link">
                             <i class="icon-heart-o"></i>
-                            <span class="wishlist-count">3</span>
+                            
                         </a>
 
                         <div class="dropdown cart-dropdown">
-                            <a href="#" class="dropdown-toggle" role="button">
+                            <a href="/cart" class="dropdown-toggle" role="button">
                                 <i class="icon-shopping-cart"></i>
-                                <span class="cart-count">2</span>
+                                
                             </a>
                         </div><!-- End .cart-dropdown -->
                         

@@ -1,7 +1,7 @@
 function isLoggedIn(req, res, next) {
     try {
         if (req.session.userData || req.session.user) {
-            next(); 
+             return next(); 
         } else {
             res.redirect("/login"); 
         }
@@ -13,7 +13,7 @@ function isLoggedIn(req, res, next) {
 function isLoggedOut(req, res, next) {
     try {
         if (!req.session.userData && !req.session.user) {
-            next(); 
+             return next(); 
         } else {
             res.redirect("/"); 
         }
@@ -24,19 +24,19 @@ function isLoggedOut(req, res, next) {
 
 }
 
-
-
 function OTPcheck(req,res,next){
     try{
         if(req.session.otp){
-            next()
+           return  next()
         }else{
+            console.log("no otp found")
             res.redirect("/")
         }
     }catch (error) {
         console.log(error.message);
     }
 }
+
 
 
 

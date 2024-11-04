@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout</title>
+  <link rel="stylesheet" href="/assets/css/bootstrap.min.css"> <!-- Bootstrap Styles -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/assets/css/style.css"> <!-- Custom Styles -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert -->
+</head>
+<body>
+
+  <!-- Page Header -->
+  <div class="page-header text-center" style="background-image: url('assets/images/page-header-bg.jpg')">
+    <div class="container">
+      <h1 class="page-title">Checkout<span>Shop</span></h1>
+    </div>
+  </div>
+
+  <!-- Breadcrumb Navigation -->
+  <nav aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="container">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Checkout</li>
+      </ol>
+    </div>
+  </nav>
+
+
+  <!-- Checkout Form -->
+  <div class="container my-5">
+<!-- Ordered Products Section -->
+<div class="row my-4">
+  <div class="col-lg-12">
+    <div class="card shadow">
+      <div class="card-body">
+        <h4 class="card-title mb-4">Ordered Products</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product Name</th>
+              <th>Brand</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+             <%let grandTotal = 0 ;%>  
+             <% items.forEach(item => { %>
+              <tr>
+                <td class="product-col">
+                  <div class="product">
+                    <figure class="product-media">
+                      <a href="#">
+                        <img
+                          src="/upload/product-images/<%= item.product.productImage[0] %>"
+                          alt="Product image"
+                        />
+                      </a>
+                    </figure>
+                    <h3 class="product-title">
+                      <a href=""><%= item.product.productName %></a>
+                    </h3>
+                    <!-- End .product-title -->
+                  </div>
+                  <!-- End .product -->
+                <td><%= item.product.brand.brandName %></td>
+                <td><%= item.quantity%></td>
+                <td>₹<%=item.product.salePrice%></td>
+                <td>₹<%= item.quantity*item.product.salePrice%></td> <!-- Total = Quantity * Price -->
+              </tr>
+              <% const itemTotal =item.quantity*item.product.salePrice;
+                   grandTotal+=itemTotal
+             }) %>
+            
+          </tbody>
+          <tr class="table-info">
+            <td colspan="4" class="text-end">Grand Total</td>
+            <td><%=grandTotal%></td> <!-- Grand Total -->
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="row">
+      <!-- Shipping Information Card -->
+      <div class="col-lg-6">
+        <div class="card shadow">
+          <div class="card-body">
+            <h4 class="card-title mb-4">Shipping Information</h4>
+
+            <!-- Saved Addresses Section -->
+            <h5 class="mb-3">Choose a saved address</h5>
+            <div id="saved-addresses">
+              <div class="card mb-3 shadow-sm">
+                <% addresses.forEach(address => { %>
+                <div class="card-body d-flex justify-content-between align-items-center">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="address" id="address" value=<%= address.addressNo %> checked>
+                    <label class="form-check-label" for="address">
+                     <%= address.name %>,<%= address.city %>,<%= address.pincode %>,<%= address.state %>,<%= address.phone%>,<%= address.altPhone %>
+                    </label>
+                  </div>
+                </div>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Method & Billing Information Card -->
+      <div class="col-lg-6">
+        <div class="card shadow ">
+          <div class="card-body">
+            <h4 class="card-title mb-4 pt-2">Payment Method</h4>
+
+            <!-- Radio Button for Credit/Debit Card -->
+            <div class="form-check form-check-custom d-flex align-items-center justify-content-between">
+              <label class="form-check-label d-flex align-items-center" for="paymentCard">
+                <i class="bi bi-credit-card me-2"></i> 
+                <span>Credit/Debit Card</span> <!-- Space between icon and text -->
+              </label>
+              <input class="form-check-input" type="radio" name="paymentMethod" id="paymentCard" value="card" checked>
+            </div>
+
+            <!-- Radio Button for Cash on Delivery -->
+            <div class="form-check form-check-custom d-flex align-items-center justify-content-between mt-3">
+              <label class="form-check-label d-flex align-items-center" for="paymentCOD">
+                <i class="bi bi-cash me-2"></i> 
+                <span>Cash on Delivery</span> <!-- Space between icon and text -->
+              </label>
+              <input class="form-check-input" type="radio" name="paymentMethod" id="paymentCOD" value="cod">
+            </div>
+
+            <!-- Radio Button for UPI -->
+            <div class="form-check form-check-custom d-flex align-items-center justify-content-between mt-3">
+              <label class="form-check-label d-flex align-items-center" for="paymentUPI">
+                <i class="bi bi-phone  me-2"></i> 
+                <span>UPI</span> <!-- Space between icon and text -->
+              </label>
+              <input class="form-check-input" type="radio" name="paymentMethod" id="paymentUPI" value="upi">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="text-center">
+      <button type="submit"  id="placeOrder" class="btn btn-primary btn-lg mt-2 ">Place Order</button>
+    </div>
+  </div>
+
+  <!-- Add your scripts at the bottom of the page -->
+  <!-- Add custom styles -->
+  <style>
+    .form-check-custom {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      transition: background-color 0.3s ease;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-check-custom:hover {
+      background-color: #f0f0f0;
+    }
+
+    .form-check-label {
+      display: flex;
+      align-items: center;
+    }
+
+    .form-check-label i {
+      font-size: 1.2rem;
+      color: #6c757d;
+    }
+
+    input#paymentUPI,
+    input#paymentCard,
+    input#paymentCOD {
+      margin-left: 45rem; /* Adjust spacing between radio button and label */
+    }
+
+    .me-2 {
+      margin-right: 0.5rem; /* Space between icon and text */
+    }
+
+    #saved-addresses .card {
+      border: 1px solid #ddd; /* Border for the address box */
+      border-radius: 8px; /* Rounded corners */
+      transition: box-shadow 0.3s ease;
+    }
+
+    #saved-addresses .card:hover {
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Shadow effect on hover */
+    }
+
+    #saved-addresses .card-body {
+      padding: 10px 20px; /* Padding inside the address box */
+    }
+
+    #saved-addresses .form-check-label {
+      margin-bottom: 0; /* Ensure label aligns properly */
+    }
+
+    input#address {
+      margin-left: -24px;
+      margin-top: 6px;
+    }
+  </style>
+  <script>
+    document.getElementById("placeOrder").addEventListener("click", placeOrder);
+    
+    function placeOrder() {
+        const selectedAddress = document.querySelector('input[name="address"]:checked').value;
+        const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+        const grandTotal = "<%=grandTotal%>"
+        
+        console.log("Selected Address:", selectedAddress);
+        console.log("Selected Payment Method:", selectedPaymentMethod);
+    
+        fetch('/placeOrder', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ address: selectedAddress, paymentMethod: selectedPaymentMethod, grandTotal:grandTotal})
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+          if(data.success){
+            // Show success message based on payment method
+            if (selectedPaymentMethod === "card") {             
+                    window.location.href = '/payment-gateway-url'; 
+            } else if (selectedPaymentMethod === "cod") {
+                  window.location.href = "/orderSuccess"
+            } else if (selectedPaymentMethod === "upi") {
+              
+                    window.location.href = '/upi-payment-url'; 
+            
+            }
+        }
+        else{
+          Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message,
+            });
+        }
+    } )
+      
+        .catch(error => {
+            console.error("Error:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'There was an issue placing your order. Please try again.'
+            });
+        });
+    }
+    </script>
+    
+</body>
+</html>

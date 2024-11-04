@@ -1,0 +1,121 @@
+<%- include('../partials/admin/adminHeader.ejs') %>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Order Management</h2>
+
+    
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Order ID</th>
+                    <th>Payment Method</th>
+                    <th>Total Price</th>
+                    <th>Discount</th>
+                    <th>Final Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (data.length > 0) { %>
+                    <% data.forEach(order => { %>
+                        <tr>
+                            <td><%= order.orderId %></td>
+                           
+                            <td><%= order.paymentMethod %></td>
+                            <td>₹<%= order.totalPrice ? order.totalPrice.toFixed(2) : "0.00" %></td>
+                            <td>₹<%= order.discount ? order.discount.toFixed(2) : "0.00" %></td>
+                            <td>₹<%= order.finalAmount ? order.finalAmount.toFixed(2) : "0.00" %></td>
+                            
+                            
+                            <td><%= order.status %></td>
+                            <td><%= new Date(order.invoiceDate).toLocaleDateString() %></td>
+                            <td>
+                                <button class="btn btn-info btn-sm" onclick="viewOrder('<%= order.orderId %>')">View</button>
+                                <button class="btn btn-warning btn-sm" onclick="cancelOrder('<%= order.orderId %>')">Cancel</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteOrder('<%= order.orderId %>')">Delete</button>
+                            </td>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="11" class="text-center">No orders found.</td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center mt-4">
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                    <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                </li>
+            <% } %>
+        </ul>
+    </nav>
+</div>
+
+<%- include('../partials/admin/adminFooter.ejs') %>
+
+<script>
+    function viewOrder(orderId) {
+        window.location.href = `/admin/order/${orderId}`;
+    }
+
+    function cancelOrder(orderId) {
+       
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This order will be canceled.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, cancel it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/admin/cancelOrder`, {
+                    method: "post",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ orderId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) window.location.reload();
+                    else Swal.fire('Error', 'Unable to cancel the order.', 'error');
+                });
+            }
+        });
+    }
+    function deleteOrder(orderId) {
+       
+       Swal.fire({
+           title: 'Are you sure?',
+           text: "This order data will be deleted.",
+           icon: 'warning',
+           showCancelButton: true,
+           confirmButtonText: 'Yes, delete it!'
+       }).then((result) => {
+           if (result.isConfirmed) {
+               fetch(`/admin/deleteOrder`, {
+                   method: "post",
+                   headers: { "Content-Type": "application/json" },
+                   body: JSON.stringify({ orderId })
+               })
+               .then(response => response.json())
+               .then(data => {
+                   if (data.success) window.location.reload();
+                   else Swal.fire('Error', 'Unable to delete the order.', 'error');
+               });
+           }
+       });
+   }
+
+</script>
+
+<style>
+    .table th, .table td { text-align: center; vertical-align: middle; }
+    .pagination .page-item.active .page-link { background-color: #007bff; border-color: #007bff; }
+</style>

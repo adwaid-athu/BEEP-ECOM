@@ -49,6 +49,16 @@ const blockUser=async(req,res)=>{
         const userdata = await User.findOne({_id:userId})
         if(userdata){
             var resp = await User.updateOne({_id:userId},{$set:{isBlocked:true}})
+            if(resp){
+                req.session.destroy((err)=>{
+                    if(err){
+                        console.log("there was an error occured while destroying session")
+                        res.status(500).send("Failed To Destroy Session")
+                    }
+                    res.clearCookie("connect.sid");
+                    
+                })
+            }
         }else{
             console.log("something went wrong");
         }

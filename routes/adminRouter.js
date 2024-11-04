@@ -6,11 +6,14 @@ const uploads = multer({ storage: storage });
 
 const auth = require("../Middleware/adminAuth");
 
+//Controllers
 const adminController = require("../controller/admin/adminController");
 const adminCategoryController = require("../controller/admin/adminCategoryController");
 const adminUsersController = require("../controller/admin/adminUsersController");
 const adminBrandController = require("../controller/admin/adminBrandController");
 const adminProductController = require("../controller/admin/adminProductController");
+const adminOrderController = require("../controller/admin/adminOrderController")
+
 
 // Admin Authentication & Dashboard Routes
 Router.get("/admin", auth.isAdminLoggedOut, adminController.loadAdminLogin);
@@ -53,11 +56,20 @@ Router.post("/admin/deleteBrand", auth.isAdminLoggedIn, adminBrandController.del
 // Product Management Routes
 Router.get("/admin/products", auth.isAdminLoggedIn, adminProductController.loadProduct);
 Router.get("/admin/addProduct",auth.isAdminLoggedIn,adminProductController.loadAddProduct)
-Router.post("/admin/addProduct",auth.isAdminLoggedIn,uploads.array("images"),adminProductController.addProduct)
+Router.post("/admin/addProduct",auth.isAdminLoggedIn,uploads.array('images',10),adminProductController.addProduct)
 Router.post("/admin/deleteProduct",auth.isAdminLoggedIn,adminProductController.deleteProduct)
 Router.post("/admin/blockProduct",auth.isAdminLoggedIn,adminProductController.blockProduct)
 Router.post("/admin/unblockProduct",auth.isAdminLoggedIn,adminProductController.unblockProduct)
 Router.get("/admin/editProduct/:id",auth.isAdminLoggedIn,adminProductController.loadEditProduct)
-Router.post("/admin/editProduct/:id",auth.isAdminLoggedIn,adminProductController.editProduct)
+Router.post("/admin/editProduct/:id",auth.isAdminLoggedIn,uploads.array('images', 10),adminProductController.editProduct)
+
+//Order Management Routes
+Router.get("/admin/orders",auth.isAdminLoggedIn,adminOrderController.loadOrder)
+Router.get("/admin/order/:id",auth.isAdminLoggedIn,adminOrderController.loadViewOrder)
+Router.post("/admin/order/update/:id", auth.isAdminLoggedIn, adminOrderController.updateOrderStatus);
+Router.post('/admin/cancelOrder',auth.isAdminLoggedIn,adminOrderController.cancelOrder);
+Router.post('/admin/deleteOrder',auth.isAdminLoggedIn,adminOrderController.deleteOrder);
+
+
 // Export Router
 module.exports = Router;

@@ -1,0 +1,132 @@
+<%- include('../partials/admin/adminHeader.ejs') %>
+
+<div class="container mt-5">
+    <h2>Order Details</h2>
+
+    <!-- Add this block for SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Function to update order status
+        async function updateOrderStatus(orderId) {
+            const newStatus = document.getElementById(`statusSelect-${orderId}`).value; // Get the selected status
+            try {
+                const response = await fetch(`/admin/order/update/${orderId}`, {
+                    method: 'post',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status: newStatus }),
+                });
+
+                const data = await response.json(); // Assuming your API responds with JSON
+
+                // Check response status and show appropriate message
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message || 'Order status updated successfully.',
+                    }).then(() => {
+                        window.location.reload(); // Refresh the page to reflect changes
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: data.error || 'An error occurred while updating the order status.',
+                    });
+                }
+            } catch (error) {
+                console.error("Error updating order status:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'An unexpected error occurred.',
+                });
+            }
+        }
+    </script>
+
+    <!-- Order Information -->
+    <div class="card mb-4">
+        <div class="card-header">Order Information</div>
+        <div class="card-body">
+            <p><strong>Order ID:</strong> <%= order.orderId %></p>
+            <p><strong>Invoice Date:</strong> <%= new Date(order.invoiceDate).toLocaleDateString() %></p>
+            <p><strong>Created On:</strong> <%= new Date(order.createdOn).toLocaleDateString() %></p>
+            <p><strong>Status:</strong> <%= order.status %></p>
+            
+            <!-- Dropdown for Status Selection -->
+            <select id="statusSelect-<%= order._id %>" class="form-select mb-2">
+                <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+            </select>
+            <!-- Update Status Button -->
+            <button onclick="updateOrderStatus('<%= order._id %>')" class="btn btn-primary">Update Status</button>
+        </div>
+    </div>
+
+    <!-- Customer Information -->
+    <div class="card mb-4">
+        <div class="card-header">Customer Information</div>
+        <div class="card-body">
+            <p><strong>Name:</strong> <%= order.address[0].name %></p>
+            <p><strong>Address:</strong> <%= order.address[0].landMark %>, <%= order.address[0].city %>, <%= order.address[0].state %>, <%= order.address[0].pincode %></p>
+            <p><strong>Phone:</strong> <%= order.address[0].phone %></p>
+            <p><strong>Alternate Phone:</strong> <%= order.address[0].altPhone || 'N/A' %></p>
+        </div>
+    </div>
+
+    <div class="table-responsive mb-4">
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% order.orderedItems.forEach(item => { %>
+                    <tr>
+                        <td><%= item.product.productName %></td>
+                        <td><%= item.quantity %></td>
+                        <td>₹<%= item.product.salePrice %></td>
+                        <td>₹<%= (item.product.salePrice * item.quantity).toFixed(2) %></td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Payment & Summary</div>
+        <div class="card-body">
+            <p><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
+            <p><strong>Total Price:</strong> ₹<%= order.totalPrice ? order.totalPrice.toFixed(2) : "0.00" %></p>
+            <p><strong>Discount:</strong> ₹<%= order.discount ? order.discount.toFixed(2) : "0.00" %></p>
+            <p><strong>Final Amount:</strong> ₹<%= order.finalAmount ? order.finalAmount.toFixed(2) : "0.00" %></p>
+            <p><strong>Coupon Applied:</strong> <%= order.couponApplied ? 'Yes' : 'No' %></p>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="/admin/orders" class="btn btn-secondary">Back to Orders</a>
+    </div>
+</div>
+
+<%- include('../partials/admin/adminFooter.ejs') %>
+
+<style>
+    .card-header {
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    .table td, .table th {
+        text-align: center;
+        vertical-align: middle;
+    }
+</style>

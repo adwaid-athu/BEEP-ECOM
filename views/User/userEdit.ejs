@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/plugins/owl-carousel/owl.carousel.css">
+    <link rel="stylesheet" href="/assets/css/plugins/magnific-popup/magnific-popup.css">
+    <!-- Main CSS File -->
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/demos/demo-12.css">
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css'></link>  
+    <style>
+        #timer-display {
+            font-size: 0.9em;
+            margin-top: 10px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-6 p-5">
+    <h2>Edit User Details</h2>
+
+    <form id="editUserForm" action="/updateUser" method="post" >
+        <div class="mb-3">
+            <label for="userName" class="form-label">Name:</label>
+            <input type="text" id="userName" name="name" value="<%= user.name %>" class="form-control "/>
+            <div class="text-danger" id="nameError"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="userPhone" class="form-label">Mobile Number:</label>
+            <input type="text" id="userPhone" name="phone" value="<%= user.phone ? user.phone : 'Not Added' %>" class="form-control"/>
+            <div class="text-danger" id="phoneError"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="userEmail" class="form-label">Email (Not Editable):</label>
+            <input type="email" id="userEmail" name="email" value="<%= user.email %>" class="form-control" readonly />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update User</button>
+    </form>
+</div>
+
+</body>
+</html>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.getElementById('editUserForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        let valid = true;
+
+        document.getElementById('nameError').textContent = '';
+        document.getElementById('phoneError').textContent = '';
+
+     
+        const name = document.getElementById('userName').value.trim();
+        if (name.length === 0) {
+            document.getElementById('nameError').textContent = 'Name cannot be empty.';
+            valid = false;
+        } else if (name.length < 3 || name.length > 50) {
+            document.getElementById('nameError').textContent = 'Name must be between 3 and 50 characters.';
+            valid = false;
+        }
+
+
+        const phone = document.getElementById('userPhone').value.trim();
+        const phoneRegex = /^[0-9]{10}$/; 
+        if (!phoneRegex.test(phone)) {
+            document.getElementById('phoneError').textContent = 'Please enter a valid 10-digit phone number.';
+            valid = false;
+        }
+
+        if (!valid) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please correct the errors in the form before submitting.'
+            });
+        } else {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You are about to update user details!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, update it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                    title: 'Updated Successfully',
+                    icon: 'success',
+                    showConfirmButton:false,
+                });
+                    setTimeout(() => {
+                        document.getElementById('editUserForm').submit();
+                    }, 1000); 
+                }
+            });
+        }
+    });
+</script>

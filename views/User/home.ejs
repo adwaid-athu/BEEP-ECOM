@@ -32,7 +32,7 @@
                             </a>
 
                             <div class="banner-content banner-content-center">
-                                <h3 class="banner-title text-white"><a href="#">This Week's Most Wanted</a></h3><!-- End .banner-title -->
+                                <h3 class="banner-title text-white"><a href="#">PRODUCTION</a></h3><!-- End .banner-title -->
                                 <a href="#" class="btn btn-outline-white banner-link">Shop Now</a>
                             </div><!-- End .banner-content -->
                         </div><!-- End .banner -->
@@ -59,7 +59,7 @@
                             </a>
 
                             <div class="banner-content banner-content-center">
-                                <h3 class="banner-title text-white"><a href="#">The Trend Story</a></h3><!-- End .banner-title -->
+                                <h3 class="banner-title text-white"><a href="#">CASUAL</a></h3><!-- End .banner-title -->
                                 <a href="#" class="btn btn-outline-white banner-link">Shop Now</a>
                             </div><!-- End .banner-content -->
                         </div><!-- End .banner -->
@@ -100,17 +100,17 @@
                                 }
                             }
                         }'>
-                        <div class="product product-4">
+                        <% recent.forEach(product => {
+                            if (!product.isBlocked){%>
+                                 <div class="product product-4">
                             <figure class="product-media">
-                                <a href="product.html">
-                                    <img src="assets/images/demos/demo-12/products/product-1.jpg" alt="Product image" class="product-image">
-                                    <img src="assets/images/demos/demo-12/products/product-1-2.jpg" alt="Product image" class="product-image-hover">
+                                <a href="/product?productId=<%= product._id %>">
+                                    <img src="/upload/product-images/<%=product.productImage[0]%>" alt="Product image" class="product-image">
+                                    <img src="/upload/product-images/<%=product.productImage[1]%>" alt="Product image" class="product-image-hover">
                                 </a>
 
                                 <div class="product-action-vertical">
                                     <a href="#" class="btn-product-icon btn-wishlist btn-expandable"><span>add to wishlist</span></a>
-                                    <a href="popup/quickView.html" class="btn-product-icon btn-quickview" title="Quick view"><span>Quick view</span></a>
-                                    <a href="#" class="btn-product-icon btn-compare" title="Compare"><span>Compare</span></a>
                                 </div><!-- End .product-action -->
 
                                 <div class="product-action">
@@ -120,171 +120,19 @@
 
                             <div class="product-body">
                                 <div class="product-cat">
-                                    <a href="#">Clothing</a>
+                                    <a><%= product.category.name %></a>
                                 </div><!-- End .product-cat -->
-                                <h3 class="product-title"><a href="product.html">Linen-blend dress</a></h3><!-- End .product-title -->
+                                <h3 class="product-title"><a href="/product?productId=<%= product._id %>"><%=product.productName%></a></h3><!-- End .product-title -->
                                 <div class="product-price">
-                                    $60.00
-                                </div><!-- End .product-price -->
-                                <div class="product-nav product-nav-dots">
-                                    <a href="#" class="active" style="background: #e5dcb1;"><span class="sr-only">Color name</span></a>
-                                    <a href="#" style="background: #bacbd8;"><span class="sr-only">Color name</span></a>
-                                </div><!-- End .product-nav -->
-                            </div><!-- End .product-body -->
-                        </div><!-- End .product -->
-
-                        <div class="product product-4">
-                            <figure class="product-media">
-                                <span class="product-label label-primary">Sale</span>
-                                <a href="product.html">
-                                    <img src="assets/images/demos/demo-12/products/product-2.jpg" alt="Product image" class="product-image">
-                                    <img src="assets/images/demos/demo-12/products/product-2-2.jpg" alt="Product image" class="product-image-hover">
-                                </a>
-
-                                <div class="product-action-vertical">
-                                    <a href="#" class="btn-product-icon btn-wishlist btn-expandable"><span>add to wishlist</span></a>
-                                    <a href="popup/quickView.html" class="btn-product-icon btn-quickview" title="Quick view"><span>Quick view</span></a>
-                                    <a href="#" class="btn-product-icon btn-compare" title="Compare"><span>Compare</span></a>
-                                </div><!-- End .product-action -->
-
-                                <div class="product-action">
-                                    <a href="#" class="btn-product btn-cart"><span>add to cart</span></a>
-                                </div><!-- End .product-action -->
-                            </figure><!-- End .product-media -->
-
-                            <div class="product-body">
-                                <div class="product-cat">
-                                    <a href="#">Shoes</a>
-                                </div><!-- End .product-cat -->
-                                <h3 class="product-title"><a href="product.html">Sandals with lacing</a></h3><!-- End .product-title -->
-
-                                <div class="product-price">
-                                    <span class="new-price">Now $70.00</span>
-                                    <span class="old-price">Was $84.00</span>
+                                    <div class="product-price">
+                                       
+                                        <div>₹<%= product.salePrice.toFixed(2) %></div>
+                                    </div>
                                 </div><!-- End .product-price -->
                             </div><!-- End .product-body -->
                         </div><!-- End .product -->
-
-                        <div class="product product-4">
-                            <figure class="product-media">
-                                <a href="product.html">
-                                    <img src="assets/images/demos/demo-12/products/product-3.jpg" alt="Product image" class="product-image">
-                                    <img src="assets/images/demos/demo-12/products/product-3-2.jpg" alt="Product image" class="product-image-hover">
-                                </a>
-
-                                <div class="product-action-vertical">
-                                    <a href="#" class="btn-product-icon btn-wishlist btn-expandable"><span>add to wishlist</span></a>
-                                    <a href="popup/quickView.html" class="btn-product-icon btn-quickview" title="Quick view"><span>Quick view</span></a>
-                                    <a href="#" class="btn-product-icon btn-compare" title="Compare"><span>Compare</span></a>
-                                </div><!-- End .product-action -->
-
-                                <div class="product-action">
-                                    <a href="#" class="btn-product btn-cart"><span>add to cart</span></a>
-                                </div><!-- End .product-action -->
-                            </figure><!-- End .product-media -->
-
-                            <div class="product-body">
-                                <div class="product-cat">
-                                    <a href="#">Clothing</a>
-                                </div><!-- End .product-cat -->
-                                <h3 class="product-title"><a href="product.html">Paper bag trousers</a></h3><!-- End .product-title -->
-                                <div class="product-price">
-                                    $60.00
-                                </div><!-- End .product-price -->
-                                <div class="product-nav product-nav-dots">
-                                    <a href="#" class="active" style="background: #9fac76;"><span class="sr-only">Color name</span></a>
-                                    <a href="#" style="background: #333333;"><span class="sr-only">Color name</span></a>
-                                </div><!-- End .product-nav -->
-                            </div><!-- End .product-body -->
-                        </div><!-- End .product -->
-
-                        <div class="product product-4">
-                            <figure class="product-media">
-                                <a href="product.html">
-                                    <img src="assets/images/demos/demo-12/products/product-4.jpg" alt="Product image" class="product-image">
-                                    <img src="assets/images/demos/demo-12/products/product-4-2.jpg" alt="Product image" class="product-image-hover">
-                                </a>
-
-                                <div class="product-action-vertical">
-                                    <a href="#" class="btn-product-icon btn-wishlist btn-expandable"><span>add to wishlist</span></a>
-                                    <a href="popup/quickView.html" class="btn-product-icon btn-quickview" title="Quick view"><span>Quick view</span></a>
-                                    <a href="#" class="btn-product-icon btn-compare" title="Compare"><span>Compare</span></a>
-                                </div><!-- End .product-action -->
-
-                                <div class="product-action">
-                                    <a href="#" class="btn-product btn-cart"><span>add to cart</span></a>
-                                </div><!-- End .product-action -->
-                            </figure><!-- End .product-media -->
-
-                            <div class="product-body">
-                                <div class="product-cat">
-                                    <a href="#">Handbags</a>
-                                </div><!-- End .product-cat -->
-                                <h3 class="product-title"><a href="product.html">Bucket bag</a></h3><!-- End .product-title -->
-                                <div class="product-price">
-                                    $350.00
-                                </div><!-- End .product-price -->
-                            </div><!-- End .product-body -->
-                        </div><!-- End .product -->
-
-                        <div class="product product-4">
-                            <figure class="product-media">
-                                <a href="product.html">
-                                    <img src="assets/images/demos/demo-12/products/product-5.jpg" alt="Product image" class="product-image">
-                                    <img src="assets/images/demos/demo-12/products/product-5-2.jpg" alt="Product image" class="product-image-hover">
-                                </a>
-
-                                <div class="product-action-vertical">
-                                    <a href="#" class="btn-product-icon btn-wishlist btn-expandable"><span>add to wishlist</span></a>
-                                    <a href="popup/quickView.html" class="btn-product-icon btn-quickview" title="Quick view"><span>Quick view</span></a>
-                                    <a href="#" class="btn-product-icon btn-compare" title="Compare"><span>Compare</span></a>
-                                </div><!-- End .product-action -->
-
-                                <div class="product-action">
-                                    <a href="#" class="btn-product btn-cart"><span>add to cart</span></a>
-                                </div><!-- End .product-action -->
-                            </figure><!-- End .product-media -->
-
-                            <div class="product-body">
-                                <div class="product-cat">
-                                    <a href="#">Clothing</a>
-                                </div><!-- End .product-cat -->
-                                <h3 class="product-title"><a href="product.html">Silk-blend kaftan</a></h3><!-- End .product-title -->
-                                <div class="product-price">
-                                    $370.00
-                                </div><!-- End .product-price -->
-                            </div><!-- End .product-body -->
-                        </div><!-- End .product -->
-
-                        <div class="product product-4">
-                            <figure class="product-media">
-                                <span class="product-label label-new">New</span>
-                                <a href="product.html">
-                                    <img src="assets/images/demos/demo-12/products/product-6.jpg" alt="Product image" class="product-image">
-                                    <img src="assets/images/demos/demo-12/products/product-6-2.jpg" alt="Product image" class="product-image-hover">
-                                </a>
-
-                                <div class="product-action-vertical">
-                                    <a href="#" class="btn-product-icon btn-wishlist btn-expandable"><span>add to wishlist</span></a>
-                                    <a href="popup/quickView.html" class="btn-product-icon btn-quickview" title="Quick view"><span>Quick view</span></a>
-                                    <a href="#" class="btn-product-icon btn-compare" title="Compare"><span>Compare</span></a>
-                                </div><!-- End .product-action -->
-
-                                <div class="product-action">
-                                    <a href="#" class="btn-product btn-cart"><span>add to cart</span></a>
-                                </div><!-- End .product-action -->
-                            </figure><!-- End .product-media -->
-
-                            <div class="product-body">
-                                <div class="product-cat">
-                                    <a href="#">Sandals</a>
-                                </div><!-- End .product-cat -->
-                                <h3 class="product-title"><a href="product.html">Spring Sandals</a></h3><!-- End .product-title -->
-                                <div class="product-price">
-                                    $59.00
-                                </div><!-- End .product-price -->
-                            </div><!-- End .product-body -->
-                        </div><!-- End .product -->
+                            <%}
+                        }); %>               
                     </div><!-- End .owl-carousel -->
                 </div><!-- End .container -->
             </div><!-- End .bg-lighter pt-5 pb-5 -->
@@ -304,7 +152,7 @@
                             </a>
 
                             <div class="banner-content banner-content-center">
-                                <h3 class="banner-title text-white"><a href="#">Accessories</a></h3><!-- End .banner-title -->
+                                <h3 class="banner-title text-white"><a href="#">Over Ear</a></h3><!-- End .banner-title -->
                                 <a href="#" class="btn btn-outline-white banner-link">Shop Now</a>
                             </div><!-- End .banner-content -->
                         </div><!-- End .banner -->
@@ -319,7 +167,7 @@
                             </a>
 
                             <div class="banner-content banner-content-center">
-                                <h3 class="banner-title text-white"><a href="#">Jewellery</a></h3><!-- End .banner-title -->
+                                <h3 class="banner-title text-white"><a href="#">Studio</a></h3><!-- End .banner-title -->
                                 <a href="#" class="btn btn-outline-white banner-link">Shop Now</a>
                             </div><!-- End .banner-content -->
                         </div><!-- End .banner -->
@@ -336,7 +184,7 @@
                                     </a>
 
                                     <div class="banner-content banner-content-center">
-                                        <h3 class="banner-title text-white"><a href="#">Clothing</a></h3><!-- End .banner-title -->
+                                        <h3 class="banner-title text-white"><a href="#">IEM'S</a></h3><!-- End .banner-title -->
                                         <a href="#" class="btn btn-outline-white banner-link">Discover Now</a>
                                     </div><!-- End .banner-content -->
                                 </div><!-- End .banner -->
@@ -351,7 +199,7 @@
                                     </a>
 
                                     <div class="banner-content banner-content-center">
-                                        <h3 class="banner-title text-white"><a href="#">Shoes</a></h3><!-- End .banner-title -->
+                                        <h3 class="banner-title text-white"><a href="#">TWS</a></h3><!-- End .banner-title -->
                                         <a href="#" class="btn btn-outline-white banner-link">Shop Now</a>
                                     </div><!-- End .banner-content -->
                                 </div><!-- End .banner -->

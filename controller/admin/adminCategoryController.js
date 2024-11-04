@@ -1,4 +1,5 @@
 const Category = require("../../Models/categorySchema");
+const Product = require("../../Models/productSchema")
 
 const loadAdminCategory = async (req, res) => {
     try {
@@ -52,8 +53,10 @@ const unlistCategory = async(req,res) => {
     try{
         const {id} = req.body;
         const categoryData = await Category.findOne({_id:id})
+       
         if(categoryData){
             await Category.updateOne({_id:id},{$set:{isListed:false}})
+            await Product.updateMany({category:id},{$set:{isBlocked:true}})
             res.status(200).json({success:true});
         }
         
@@ -66,8 +69,10 @@ const listCategory = async(req,res) =>{
     try {
         const {id} =req.body
         const categoryData = await Category.findOne({_id:id})
+        
         if(categoryData){
-           await Category.updateOne({_id:id},{$set:{isListed:true}})
+            await Category.updateOne({_id:id},{$set:{isListed:true}})
+            await Product.updateMany({category:id},{$set:{isBlocked:false}})
            res.status(200).json({success:true});
         }
     } catch (error) {
@@ -79,6 +84,7 @@ const deleteCategory = async(req,res)=>{
 try {
         const {id} =req.body
         const categoryData = await Category.deleteOne({_id:id})
+        const deleteProduct =  await Product.deleteMany({category:id})
         if(categoryData){
            res.status(200).json({success:true});
         }
@@ -102,7 +108,7 @@ const loadEditCategory = async(req,res)=>{
 }
 const editCategory = async(req,res)=>{
     try {
-        console.log(' iam in')
+        console.log('iam in')
         const {name,description} = req.body
         const id = req.params.id 
         console.log(id,name,description)

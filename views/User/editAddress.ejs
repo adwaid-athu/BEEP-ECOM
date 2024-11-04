@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Address</title>
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/plugins/owl-carousel/owl.carousel.css">
+    <link rel="stylesheet" href="/assets/css/plugins/magnific-popup/magnific-popup.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/demos/demo-12.css">
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css'>
+    <style>
+        .add-address-container {
+            margin-top: 50px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        h2 {
+            font-weight: 600;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .form-label {
+            font-weight: bold;
+        }
+        .text-danger {
+            font-size: 0.85em;
+        }
+        .form-control {
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container add-address-container">
+    <h2>Add Address</h2>
+    <form id="addAddressForm">
+        <input type="hidden" name="addressNo" value=<%= address.addressNo %> id="addressNo">
+        <div class="mb-3">
+            <label for="addressType" class="form-label">Address Type:</label>
+            <input type="text" id="addressType" name="addressType" class="form-control" placeholder="e.g., Home, Work" value=<%= address.addressType %>>
+            <div class="text-danger" id="addressTypeError"></div>
+        </div>
+        <div class="mb-3">
+            <label for="name" class="form-label">Name:</label>
+            <input type="text" id="name" name="name" class="form-control" placeholder="e.g., John Doe" value=<%= address.name %>>
+            <div class="text-danger" id="nameError"></div>
+        </div>
+        <div class="mb-3">
+            <label for="city" class="form-label">City:</label>
+            <input type="text" id="city" name="city" class="form-control" placeholder="e.g., New York"value=<%= address.city %>>
+            <div class="text-danger" id="cityError"></div>
+        </div>
+        <div class="mb-3">
+            <label for="landMark" class="form-label">Landmark:</label>
+            <input type="text" id="landMark" name="landMark" class="form-control" placeholder="e.g., Near Central Park" value=<%= address.landMark %>>
+            <div class="text-danger" id="landMarkError"></div>
+        </div>
+        <div class="mb-3">
+            <label for="state" class="form-label">State:</label>
+            <input type="text" id="state" name="state" class="form-control" placeholder="e.g., NY" value=<%= address.state %>>
+            <div class="text-danger" id="stateError"></div>
+        </div>
+        <div class="mb-3">
+            <label for="pincode" class="form-label">Pincode:</label>
+            <input type="text" id="pincode" name="pincode" class="form-control" placeholder="e.g., 10001" value=<%= address.pincode %>>
+            <div class="text-danger" id="pincodeError"></div>
+        </div>
+        <div class="mb-3">
+            <label for="phone" class="form-label">Phone:</label>
+            <input type="text" id="phone" name="phone" class="form-control" placeholder="e.g., 123-456-7890"value=<%= address.phone %>>
+            <div class="text-danger" id="phoneError"></div>
+        </div>
+        <div class="mb-3">
+            <label for="altPhone" class="form-label">Alternate Phone:</label>
+            <input type="text" id="altPhone" name="altPhone" class="form-control" placeholder="e.g., 098-765-4321" value=<%= address.altPhone %>>
+            <div class="text-danger" id="altPhoneError"></div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Add Address</button>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.getElementById('addAddressForm').addEventListener('submit', async function(event) {
+        event.preventDefault(); 
+        let valid = true;
+
+        document.getElementById('addressTypeError').textContent = '';
+        document.getElementById('nameError').textContent = '';
+        document.getElementById('cityError').textContent = '';
+        document.getElementById('landMarkError').textContent = '';
+        document.getElementById('stateError').textContent = '';
+        document.getElementById('pincodeError').textContent = '';
+        document.getElementById('phoneError').textContent = '';
+        document.getElementById('altPhoneError').textContent = '';
+
+        const addressNo = document.getElementById('addressNo').value.trim();
+        const addressType = document.getElementById('addressType').value.trim();
+        const name = document.getElementById('name').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const landMark = document.getElementById('landMark').value.trim();
+        const state = document.getElementById('state').value.trim();
+        const pincode = document.getElementById('pincode').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const altPhone = document.getElementById('altPhone').value.trim();
+
+        if (addressType.length === 0) {
+            document.getElementById('addressTypeError').textContent = 'Address type is required.';
+            valid = false;
+        }
+        if (name.length === 0) {
+            document.getElementById('nameError').textContent = 'Name is required.';
+            valid = false;
+        }
+        if (city.length === 0) {
+            document.getElementById('cityError').textContent = 'City is required.';
+            valid = false;
+        }
+        if (landMark.length === 0) {
+            document.getElementById('landMarkError').textContent = 'Landmark is required.';
+            valid = false;
+        }
+        if (state.length === 0) {
+            document.getElementById('stateError').textContent = 'State is required.';
+            valid = false;
+        }
+        if (pincode.length === 0) {
+            document.getElementById('pincodeError').textContent = 'Pincode is required.';
+            valid = false;
+        }
+        if (phone.length === 0) {
+            document.getElementById('phoneError').textContent = 'Phone number is required.';
+            valid = false;
+        }
+        if (altPhone.length === 0) {
+            document.getElementById('altPhoneError').textContent = 'Alternate phone number is required.';
+            valid = false;
+        }
+
+        if (!valid) {
+            return;
+        }
+
+        try {
+            
+            const response = await fetch('/editAddress', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({addressNo,addressType, name, city, landMark, state, pincode, phone, altPhone})
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                Swal.fire({
+                    title: 'Address Edited Succesfully',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 1500);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.message || 'An error occurred. Please try again.'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred while processing your request.'
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
