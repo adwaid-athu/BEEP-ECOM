@@ -1,11 +1,144 @@
 <%- include('../partials/admin/adminHeader.ejs') %>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-hi this is home 
+<body style="margin: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
 
-<style>
-    body{
-        background-color: brown;
-    }
-</style>
-<%- include('../partials/admin/adminFooter.ejs') %>
+    <!-- Header -->
+    <div>
+      <h1 class="text-center mt-4 mb-3">Admin Home</h1>
+    </div>
 
+    <div class="container-fluid" style="padding: 20px;">
+        <!-- Filters -->
+        <h2 class="text-center">Sales Overview</h2>
+            <div class="col-mr-3">
+                <label for="timeFilter" style="font-weight: bold; color: #333333;">Select Time Filter:</label>
+                <select id="timeFilter" style="width: 10%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;" onchange="updateChart(this.value)">
+                    <option value="yearly">Yearly</option>
+                    <option value="monthly" >Monthly</option>
+                    <option value="weekly"selected>Weekly</option>
+                </select>
+            </div>
+       
+
+        <!-- Chart Section -->
+        <div class="row" style="margin-bottom: 40px;">
+            <div class="col-md-12">
+               
+                <div style="background: #fff; border: 1px solid #ddd; padding: 20px; border-radius: 5px;">
+                    <canvas id="salesChart" width="400" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+
+       <!-- Best Selling Products -->
+<div style="margin: 20px; padding: 20px;">
+    <h2 style="text-align: center; font-size: 24px; margin-bottom: 20px;">Best Selling Products</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+        <!-- Individual Product Card -->
+        <% topSelling.forEach(product => { %>
+        <div style="width: 300px; border: 1px solid #ddd; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <img src="/upload/re-image/<%= product.productImage[0] %>" alt="<%= product.productName %>" style="width: 100%; height: 300px; object-fit: cover;">
+            <div style="padding: 15px;">
+                <h3 style="font-size: 18px; font-weight: bold; margin: 0 0 10px;"><%= product.productName %></h3>
+                <p style="font-size: 14px; color: #555; margin: 0 0 10px;"><%= product.description %></p>
+                <p style="font-size: 14px; color: #000; margin: 0;"><b>Quantity Sold:</b> <%= product.totalQuantitySold %></p>
+            </div>
+        </div>
+        <% }); %>
+    </div>
+</div>
+
+<!-- Best selling Category  -->
+<div style="margin: 20px; padding: 20px;">
+    <h2 style="text-align: center; font-size: 24px; margin-bottom: 20px;">Best Selling Categories</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+        <% topSellingCategories.forEach(category => { %>
+        <div style="width: 300px; border: 1px solid #ddd; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <div style="padding: 15px;">
+                <h3 style="font-size: 18px; font-weight: bold; margin: 0 0 10px;"><%= category._id %></h3>
+                <p style="font-size: 14px; color: #000; margin: 0;"><b>Quantity Sold:</b> <%= category.totalQuantitySold %></p>
+            </div>
+        </div>
+        <% }); %>
+    </div>
+</div>
+
+<!-- Best selling Brand -->
+
+<div style="margin: 20px; padding: 20px;">
+    <h2 style="text-align: center; font-size: 24px; margin-bottom: 20px;">Best Selling Brands</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+        <% topSellingBrands.forEach(brand => { %>
+        <div style="width: 300px; border: 1px solid #ddd; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <div style="padding: 15px;">
+                <h3 style="font-size: 18px; font-weight: bold; margin: 0 0 10px;"><%= brand._id %></h3>
+                <p style="font-size: 14px; color: #000; margin: 0;"><b>Quantity Sold:</b> <%= brand.totalQuantitySold %></p>
+            </div>
+        </div>
+        <% }); %>
+    </div>
+</div>
+
+
+
+       
+
+    <script>
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        const labelString = "<%=labels%>"
+        const labels = labelString.split(",")
+        const dataString = "<%=counts%>"
+        const data=dataString.split(",")
+
+
+        // Initialize the chart with empty data
+        const salesChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels:labels, // Initially empty; will be populated dynamically
+                datasets: [{
+                    label: 'Sales',
+                    data:data, // Initially empty; will be populated dynamically
+                    backgroundColor: 'rgba(76, 175, 80, 0.7)',
+                    borderColor: '#4CAF50',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    
+        // Function to fetch and update chart data
+        async function updateChart(interval) {
+            try {
+                const response = await fetch(`/admin/dashboardUpdate?interval=${interval}`);
+                const { labels, counts } = await response.json();
+        
+    
+                // Update chart data
+                salesChart.data.labels = labels; // Set labels (e.g., months, weeks, or years)
+                salesChart.data.datasets[0].data = counts; // Set data
+                salesChart.update(); // Refresh the chart
+            } catch (error) {
+                console.error("Error fetching chart data:", error);
+            }
+        }
+    
+        
+    </script>
+    
+    
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

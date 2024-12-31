@@ -310,6 +310,7 @@ $(document).ready(function () {
 
         // Open popup - product images
         $('#btn-product-gallery').on('click', function (e) {
+            console.log("magnigic plugin found")
             if ( $.fn.magnificPopup ) {
                 $.magnificPopup.open({
                     items: ez.getGalleryList(),
@@ -323,6 +324,8 @@ $(document).ready(function () {
                 }, 0);
 
                 e.preventDefault();
+            }else{
+                console.error("magnific Popup plugin is not loaded")
             }
         });
     }

@@ -25,13 +25,13 @@
                             <td><%= order.orderId %></td>
                            
                             <td><%= order.paymentMethod %></td>
-                            <td>₹<%= order.totalPrice ? order.totalPrice.toFixed(2) : "0.00" %></td>
+                            <td>₹<%= (order.finalAmount+order.discount).toFixed(2)%></td>
                             <td>₹<%= order.discount ? order.discount.toFixed(2) : "0.00" %></td>
                             <td>₹<%= order.finalAmount ? order.finalAmount.toFixed(2) : "0.00" %></td>
                             
                             
                             <td><%= order.status %></td>
-                            <td><%= new Date(order.invoiceDate).toLocaleDateString() %></td>
+                            <td><%= new Date(order.invoiceDate).toISOString().split('T')[0] %></td>
                             <td>
                                 <button class="btn btn-info btn-sm" onclick="viewOrder('<%= order.orderId %>')">View</button>
                                 <button class="btn btn-warning btn-sm" onclick="cancelOrder('<%= order.orderId %>')">Cancel</button>

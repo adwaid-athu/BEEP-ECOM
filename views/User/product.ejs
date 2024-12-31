@@ -64,14 +64,30 @@
             <div class="product-details">
               <h6 class="product-brand"><%= product.brand.brandName %></h6>
               <h1 class="product-title"><%= product.productName %></h1>
-              <!-- End .product-title -->
+             <div class="product-price">
+  <% if (product.status === "Available") { %>
+    <div class="old-price mr-3">₹<%= product.regularPrice %></div>
+    <%
+      let discount = false;
+      if (product.offer && product.offer.discount) {
+        discount = product.offer.discount;
+      } else if (product.category && product.category.offer && product.category.offer.discount) {
+        discount = product.category.offer.discount;
+      } else if (product.brand && product.brand.offer && product.brand.offer.discount) {
+        discount = product.brand.offer.discount;
+      }
+      discount = parseFloat(discount) || 0; // Ensure discount is a valid number
+    %>
+    <% if (discount > 0) { %> 
+      ₹<%= (product.salePrice - (product.salePrice * (discount / 100))).toFixed(2) %>
+    <% } else { %> 
+      ₹<%= product.salePrice %>
+    <% } %>
+  <% } else { %>
+    <%= product.status %>
+  <% } %>
+</div>
 
-              <div class="product-price">
-                <% if (product.status==="Available") { %>
-                <div class="old-price mr-3">₹<%= product.regularPrice %></div>
-                <div>₹<%= product.salePrice.toFixed(2) %></div>
-                <%} else {%> <%= product.status %> <%}%>
-              </div>
               <!-- End .product-price -->
               <br />
 
@@ -84,7 +100,7 @@
                     class="form-control"
                     value="1"
                     min="1"
-                    max="10"
+                    max="5"
                     step="1"
                     required
                   />
@@ -371,9 +387,7 @@
           } else {
             Swal.fire({
               title: "Error",
-              text:
-                data.message ||
-                "Could not add the product to your cart.",
+              text: data.message || "Could not add the product to your cart.",
               icon: "error",
               confirmButtonText: "OK",
             });

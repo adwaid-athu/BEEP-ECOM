@@ -24,6 +24,10 @@ const orderSchema = new Schema({
             type:Number,
             required:true
         },
+        price:{
+            type:Number,
+            required:true,
+        }
 
     }],
     paymentMethod:{
@@ -54,7 +58,7 @@ const orderSchema = new Schema({
     status:{
         type:String,
         required:true,
-        enum:['Pending','Processing','Shipped','Delivered','Cancelled','Return Request','Returned']
+        enum:['Pending','Processing','Shipped','Delivered','Cancelled','Return','Returned']
     },
     createdOn :{
         type:Date,
@@ -62,8 +66,8 @@ const orderSchema = new Schema({
         required:true
     },
     couponApplied:{
-        type:Boolean,
-        default:false
+        type:Schema.Types.ObjectId,
+        ref:'Coupon'
     }
 })
 

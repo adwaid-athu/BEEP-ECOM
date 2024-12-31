@@ -10,7 +10,8 @@ const loadOrder = async (req, res) => {
         const skip = (page - 1) * limit; 
 
         
-        const orders = await Order.find() 
+        const orders = await Order.find()
+            .sort({createdOn:-1}) 
             .skip(skip)
             .limit(limit)
             .lean(); 
@@ -23,6 +24,7 @@ const loadOrder = async (req, res) => {
             currentPage: page,
             totalPages: totalPages
         });
+      
     } catch (error) {
         console.error("Error loading orders:", error);
         res.status(500).send("Internal Server Error"); 
@@ -40,7 +42,7 @@ const loadViewOrder = async (req, res) => {
             return res.redirect("/admin/orders");
         }
 
-        res.render("orderView", { order });
+        res.render("adminOrderView", { order });
     } catch (error) {
         console.error("Error loading order:", error);
         req.session.error_msg = "An error occurred while loading the order."; 
@@ -70,7 +72,6 @@ const updateOrderStatus = async (req, res) => {
     
 
     try {
-        // Find the order by ID and update its status
         const order = await Order.findOneAndUpdate({orderId:orderId}, { status: 'Cancelled' }, { new: true });
 
         if (!order) {
@@ -88,7 +89,6 @@ const deleteOrder = async (req, res) => {
     
 
     try {
-        // Find the order by ID and update its status
         const order = await Order.findOneAndDelete({orderId:orderId});
 
         if (!order) {

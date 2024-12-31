@@ -56,6 +56,10 @@ const productSchema = new Schema({
         type: Boolean,
         default: false
     },
+    offer:{
+        type:Schema.Types.ObjectId,
+        ref:"Offer"
+        }
 });
 
 const Product = mongoose.model("Product",productSchema);

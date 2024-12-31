@@ -86,7 +86,33 @@
                       </div>
                       <!-- End .product -->
                     </td>
-                    <td class="price-col">₹<%= item.product.salePrice %></td>
+                    <td class="price-col">
+                      <%
+                        let discount = 0; 
+                        let finalPrice = item.product.salePrice; 
+                        
+                        if (item.product.offer && item.product.offer.discount) {
+                          discount = item.product.offer.discount;
+                        } else if (item.product.category && item.product.category.offer && item.product.category.offer.discount) {
+                          discount = item.product.category.offer.discount;
+                        } else if (item.product.brand && item.product.brand.offer && item.product.brand.offer.discount) {
+                          discount = item.product.brand.offer.discount;
+                        }
+                        
+                        discount = parseFloat(discount) || 0; 
+                        
+                        if (discount > 0) {
+                          finalPrice = item.product.salePrice - (item.product.salePrice * (discount / 100));
+                        }
+                      %>
+                      
+                      <% if (discount > 0) { %> 
+                        ₹<%= finalPrice.toFixed(2) %> 
+                      <% } else { %>
+                        ₹<%= finalPrice.toFixed(2) %>
+                      <% } %>
+                    </td>
+                    
                     <td class="quantity-col">
                       <div class="cart-product-quantity d-flex">
                         <button
@@ -104,7 +130,7 @@
                           step="1"
                           data-decimals="0"
                           data-product-id="<%= item.product._id %>"
-                          data-product-quantity ="<%= item.product.quantity %>"
+                          data-product-quantity="<%= item.product.quantity %>"
                           required
                           readonly
                         />
@@ -117,7 +143,7 @@
                       </div>
                     </td>
                     <td class="total-col">
-                      ₹<%=item.product.salePrice * item.quantity %>
+                      ₹<%= finalPrice * item.quantity %>
                     </td>
                     <td class="remove-col">
                       <button
@@ -135,29 +161,79 @@
 
               <div class="cart-bottom">
                 <div class="cart-discount">
-                  <form action="#">
+                  <% if (!cart.appliedCoupon) { %>
+                  <form id="couponForm">
                     <div class="input-group">
                       <input
                         type="text"
                         class="form-control"
-                        required
-                        placeholder="coupon code"
+                        id="couponInput"
+                        name="couponCode"
+                        placeholder="Enter coupon code"
                       />
                       <div class="input-group-append">
                         <button class="btn btn-outline-primary-2" type="submit">
                           <i class="icon-long-arrow-right"></i>
                         </button>
                       </div>
-                      <!-- .End .input-group-append -->
                     </div>
-                    <!-- End .input-group -->
                   </form>
+                  <div class="container mt-5">
+                    <h5>Available Coupon</h5>
+                    <% coupons.forEach((coupon, index) => { %>
+                    <div
+                      class="card mb-2 shadow-sm border-light"
+                      style="max-width: 400px"
+                    >
+                      <div
+                        class="card-body d-flex align-items-center justify-content-between"
+                      >
+                        <span
+                          class="coupon-code text-truncate mt-1"
+                          style="max-width: 250px"
+                          ><%= coupon.couponCode %></span
+                        >
+                        <button
+                          id="copy-btn-<%= index %>"
+                          class="btn btn-outline-primary btn-sm mt-1 p-1"
+                          onclick="copyToClipboard('<%= coupon.couponCode %>', 'copy-btn-<%= index %>')"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                    <% }) %>
+                  </div>
+                  <% }else{ %>
+                  <div class="container mt-5">
+                    <h5>Applied Coupon</h5>
+                    <div
+                      class="card mb-2 shadow-sm border-light"
+                      style="max-width: 400px"
+                    >
+                      <div
+                        class="card-body d-flex align-items-center justify-content-between"
+                      >
+                        <span
+                          id="couponCode"
+                          class="coupon-code text-truncate mt-1"
+                          style="max-width: 250px"
+                        >
+                          <%= cart.appliedCoupon.couponCode %>
+                        </span>
+                        <button
+                          id="couponRemove-btn"
+                          class="btn btn-outline-primary btn-sm mt-1 p-1"
+                          onclick="removeCoupon()"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <% } %>
                 </div>
                 <!-- End .cart-discount -->
-
-                <a href="#" class="btn btn-outline-dark-2"
-                  ><span>UPDATE CART</span><i class="icon-refresh"></i
-                ></a>
               </div>
               <!-- End .cart-bottom -->
             </div>
@@ -167,29 +243,43 @@
                 <h3 class="summary-title">Cart Total</h3>
                 <!-- End .summary-title -->
 
-                <table class="table table-summary">
-                  <tbody>
-                    <tr class="summary-total">
-                      <td>Total:</td>
-                      <td>$</td>
-                    </tr>
-                    <!-- End .summary-total -->
-                  </tbody>
+                <table class="table summary-table">
+                  <tr>
+                    <td class="font-weight-bold">Subtotal</td>
+                    <td class="summary-subtotal text-right">₹0.00</td>
+                  </tr>
+                  <% if (cart.appliedCoupon) { %>
+                  <tr id="discount-row">
+                    <td class="text-success font-weight-bold">
+                      Coupon Discount
+                    </td>
+                    <td class="summary-discount text-right text-danger">
+                      -₹<%= cart.appliedCoupon.offerPrice %>
+                    </td>
+                  </tr>
+                  <% } %>
+                  <tr class="summary-total">
+                    <td class="font-weight-bold text-primary">Grand Total</td>
+                    <td class="text-right text-primary font-weight-bold">
+                      ₹0.00
+                    </td>
+                  </tr>
                 </table>
+
                 <!-- End .table table-summary -->
 
-                <a href="<%= items.length > 0 ? '/checkout' : 'javascript:void(0);' %>"
+                <a
+                  href="<%= items.length > 0 ? '/checkout' : 'javascript:void(0);' %>"
                   class="btn btn-outline-primary-2 btn-order btn-block"
                   id="checkoutButton"
-                  data-item-count="<%= items.length %>">
+                  data-item-count="<%= items.length %>"
+                >
                   PROCEED TO CHECKOUT
-               </a>
+                </a>
               </div>
               <!-- End .summary -->
 
-              <a
-                href="/shop"
-                class="btn btn-outline-dark-2 btn-block mb-3"
+              <a href="/shop" class="btn btn-outline-dark-2 btn-block mb-3"
                 ><span>CONTINUE SHOPPING</span><i class="icon-refresh"></i
               ></a>
             </aside>
@@ -205,28 +295,27 @@
   </main>
   <!-- End .main -->
 
-
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <script>
-    document.getElementById('checkoutButton').addEventListener('click', function(event) {
-    const itemCount = parseInt(this.getAttribute('data-item-count'), 10);
-    
-    if (itemCount === 0) {
-        event.preventDefault(); // Prevent the default link action
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'There are no items in your cart.',
-        });
-    }
-});
+    document
+      .getElementById("checkoutButton")
+      .addEventListener("click", function (event) {
+        const itemCount = parseInt(this.getAttribute("data-item-count"), 10);
 
+        if (itemCount === 0) {
+          event.preventDefault(); // Prevent the default link action
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "There are no items in your cart.",
+          });
+        }
+      });
   </script>
 
   <script>
-
-    updateCartSummary()
+    updateCartSummary();
     // Function to update the total for an item
     function updateTotal(inputElement) {
       const quantity = parseInt(inputElement.value);
@@ -244,35 +333,37 @@
 
     // Function to change quantity
     function changeQuantity(inputElement, increment) {
-      const productQuantity = inputElement.dataset.productQuantity
+      const productQuantity = inputElement.dataset.productQuantity;
       let quantity = parseInt(inputElement.value);
       const product = inputElement.dataset.productId;
-      console.log(product)
+      console.log(product);
 
       if (increment) {
-        if (quantity < parseInt(inputElement.max)&&quantity<productQuantity) {
+        if (
+          quantity < parseInt(inputElement.max) &&
+          quantity < productQuantity
+        ) {
           // Ensure max limit
           quantity++;
-        }
-        else{
+        } else {
           Swal.fire({
-              icon: "error",
-              title: "Error!",
-              text:"Cannot add more",
-              showConfirmButton: true, // Removes the OK button since it will auto-close
-            });
+            icon: "error",
+            title: "Error!",
+            text: "Cannot add more",
+            showConfirmButton: true, // Removes the OK button since it will auto-close
+          });
         }
       } else {
         if (quantity > 1) {
           // Ensure minimum limit
           quantity--;
-        }else{
+        } else {
           Swal.fire({
-              icon: "error",
-              title: "Error!",
-              text:"Cannot reduce more than 1",
-              showConfirmButton: true, // Removes the OK button since it will auto-close
-            });
+            icon: "error",
+            title: "Error!",
+            text: "Cannot reduce more than 1",
+            showConfirmButton: true, // Removes the OK button since it will auto-close
+          });
         }
       }
 
@@ -283,14 +374,26 @@
 
     // Function to update the cart summary
     function updateCartSummary() {
-      const totalElements = document.querySelectorAll(".total-col");
-      let grandTotal = 0;
+      const couponAmount = parseFloat(
+        "<%= cart.appliedCoupon ? cart.appliedCoupon.offerPrice : 0 %>"
+      );
 
+      const totalElements = document.querySelectorAll(".total-col");
+      let subtotal = 0;
+
+      // Calculate subtotal
       totalElements.forEach((element) => {
-        grandTotal += parseFloat(element.innerText.replace("₹", ""));
+        subtotal += parseFloat(element.innerText.replace("₹", ""));
       });
 
-      // Update the total in the cart summary
+      // Update the subtotal in the summary table
+      const subtotalRow = document.querySelector(".summary-subtotal");
+      subtotalRow.innerText = "₹" + subtotal.toFixed(2);
+
+      // Calculate grand total by subtracting the coupon discount
+      const grandTotal = subtotal - couponAmount;
+
+      // Update the grand total in the summary table
       const totalRow = document.querySelector(".summary-total td:last-child");
       totalRow.innerText = "₹" + grandTotal.toFixed(2);
     }
@@ -315,17 +418,17 @@
               text: data.message,
               timer: 2000, // 2 seconds
               timerProgressBar: true, // Shows a progress bar
-              showConfirmButton: false, // Removes the OK button since it will auto-close
+              showConfirmButton: true, // Removes the OK button since it will auto-close
             });
           }
         })
         .catch((error) => {
           Swal.fire({
-              icon: "error",
-              title: "Error!",
-              text: data.message,
-              showConfirmButton: true, // Removes the OK button since it will auto-close
-            });
+            icon: "error",
+            title: "Error!",
+            text: data.message,
+            showConfirmButton: true, // Removes the OK button since it will auto-close
+          });
         });
     }
 
@@ -341,33 +444,34 @@
         cancelButtonColor: "#3085d6",
         confirmButtonText: "Yes, remove it!",
         cancelButtonText: "No, keep it",
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-      fetch(`/removeItem`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ product }),
       })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            row.remove(); // Remove the row from the DOM
-            updateCartSummary(); // Update cart summary total
-          } else {
-            Swal.fire({
-              icon: "error",
-              title: "Error!",
-              text: "Failed to remove item",
-              timer: 2000, // 2 seconds
-              timerProgressBar: true, // Shows a progress bar
-              showConfirmButton: false, // Removes the OK button since it will auto-close
-            });
+        .then(async (result) => {
+          if (result.isConfirmed) {
+            fetch(`/removeItem`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ product }),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  row.remove(); // Remove the row from the DOM
+                  updateCartSummary(); // Update cart summary total
+                } else {
+                  Swal.fire({
+                    icon: "error",
+                    title: "Error!",
+                    text: "Failed to remove item",
+                    timer: 2000, // 2 seconds
+                    timerProgressBar: true, // Shows a progress bar
+                    showConfirmButton: false, // Removes the OK button since it will auto-close
+                  });
+                }
+              });
           }
         })
-      }
-    })
         .catch((error) => {
           console.error("Error removing item:", error);
         });
@@ -426,4 +530,164 @@
       background-color: #e2e6ea; /* Button hover background */
     }
   </style>
+  <script>
+    function copyToClipboard(code, buttonId) {
+      navigator.clipboard
+        .writeText(code)
+        .then(() => {
+          const button = document.getElementById(buttonId);
+          button.textContent = "Copied!";
+          button.classList.remove("btn-outline-primary");
+          button.classList.add("btn-success");
+
+          // Revert back to original text after 2 seconds
+          setTimeout(() => {
+            button.textContent = "Copy";
+            button.classList.remove("btn-success");
+            button.classList.add("btn-outline-primary");
+          }, 2000);
+        })
+        .catch((err) => {
+          console.error("Copy failed: ", err);
+        });
+    }
+
+    function removeCoupon() {
+      // Display SweetAlert confirmation before proceeding with removal
+      Swal.fire({
+        title: "Are you sure?",
+        text: "Do you want to remove the applied coupon?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, Remove it!",
+        cancelButtonText: "No, Keep it",
+        reverseButtons: true,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // If the user confirms, proceed with the coupon removal
+          fetch("/removeCoupon", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                // Update the UI after the coupon is removed
+                document.getElementById("couponCode").textContent = ""; // Clear the coupon code
+                document.getElementById("couponRemove-btn").style.display =
+                  "none"; // Hide the "Remove" button
+
+                // Show a success SweetAlert
+                Swal.fire({
+                  title: "Coupon Removed!",
+                  text: data.message,
+                  icon: "success",
+                  showConfirmButton: false,
+                  timer: 1000,
+                }).then(() => {
+                  window.location.reload();
+                });
+              } else {
+                // Show error message if the coupon could not be removed
+                Swal.fire({
+                  title: "Error!",
+                  text: data.message,
+                  icon: "error",
+                  confirmButtonText: "Try Again",
+                });
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              Swal.fire({
+                title: "Error!",
+                text: "There was an issue removing the coupon.",
+                icon: "error",
+                confirmButtonText: "Try Again",
+              });
+            });
+        } else {
+          // If the user cancels, do nothing
+          Swal.fire({
+            title: "Cancelled",
+            text: "The coupon was not removed.",
+            icon: "info",
+            confirmButtonText: "OK",
+          });
+        }
+      });
+    }
+  </script>
+
+  <style>
+    .coupon-code {
+      font-family: monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  </style>
+
+  <script>
+    document
+      .getElementById("couponForm")
+      .addEventListener("submit", function (event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        const couponCode = document.getElementById("couponInput").value;
+
+        if (couponCode) {
+          // Make the AJAX request
+          fetch("/applyCoupon", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ couponCode: couponCode }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                Swal.fire({
+                  title: "Coupon Applied!",
+                  text: data.message, // Server response message
+                  icon: "success",
+                  confirmButtonText: "OK",
+                }).then(() => {
+                  window.location.reload();
+                });
+              } else {
+                Swal.fire({
+                  title: "Coupon Not Applied!",
+                  text: data.message, // Server response message
+                  icon: "error",
+                  confirmButtonText: "OK",
+                }).then(() => {
+                  window.location.reload();
+                });
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              // Show error SweetAlert if there's an issue applying the coupon
+              Swal.fire({
+                title: "Error!",
+                text: "There was an error applying the coupon.",
+                icon: "error",
+                confirmButtonText: "Try Again",
+              });
+            });
+        } else {
+          // Show SweetAlert if no coupon code is entered
+          Swal.fire({
+            title: "Error!",
+            text: "Please enter a coupon code!",
+            icon: "warning",
+            confirmButtonText: "OK",
+          });
+        }
+      });
+  </script>
 </html>

@@ -3,15 +3,16 @@
 <div class="container mt-5">
     <h2>Order Details</h2>
 
-    <!-- Add this block for SweetAlert -->
+    <!-- Include SweetAlert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         // Function to update order status
         async function updateOrderStatus(orderId) {
             const newStatus = document.getElementById(`statusSelect-${orderId}`).value; // Get the selected status
             try {
                 const response = await fetch(`/admin/order/update/${orderId}`, {
-                    method: 'post',
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -22,15 +23,17 @@
 
                 // Check response status and show appropriate message
                 if (response.ok) {
-                    Swal.fire({
+                    await Swal.fire({
                         icon: 'success',
                         title: 'Success!',
+                        timer: 2000,
                         text: data.message || 'Order status updated successfully.',
+                        showConfirmButton: false,
                     }).then(() => {
-                        window.location.reload(); // Refresh the page to reflect changes
+                        location.reload();
                     });
                 } else {
-                    Swal.fire({
+                    await Swal.fire({
                         icon: 'error',
                         title: 'Oops...',
                         text: data.error || 'An error occurred while updating the order status.',
@@ -38,7 +41,7 @@
                 }
             } catch (error) {
                 console.error("Error updating order status:", error);
-                Swal.fire({
+                await Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
                     text: 'An unexpected error occurred.',
@@ -52,19 +55,25 @@
         <div class="card-header">Order Information</div>
         <div class="card-body">
             <p><strong>Order ID:</strong> <%= order.orderId %></p>
-            <p><strong>Invoice Date:</strong> <%= new Date(order.invoiceDate).toLocaleDateString() %></p>
-            <p><strong>Created On:</strong> <%= new Date(order.createdOn).toLocaleDateString() %></p>
+            <p><strong>Invoice Date:</strong>  <%= new Date(order.invoiceDate).toISOString().split('T')[0] %></p>
+       
+
+            <p><strong>Created On:</strong>  <%= new Date(order.createdOn).toISOString().split('T')[0] %></p>
             <p><strong>Status:</strong> <%= order.status %></p>
-            
+
             <!-- Dropdown for Status Selection -->
-            <select id="statusSelect-<%= order._id %>" class="form-select mb-2">
+            <select id="statusSelect-<%= order._id %>" class="form-select">
                 <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
                 <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
                 <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
                 <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                <option value="Return" <%= order.status === 'Return' ? 'selected' : '' %>>Return</option>
+                <option value="Returned" <%= order.status === 'Returned' ? 'selected' : '' %>>Returned</option>
             </select>
+            
             <!-- Update Status Button -->
-            <button onclick="updateOrderStatus('<%= order._id %>')" class="btn btn-primary">Update Status</button>
+            <button onclick="updateOrderStatus('<%= order._id %>')" class="btn btn-primary mt-2">Update Status</button>
         </div>
     </div>
 
@@ -72,13 +81,14 @@
     <div class="card mb-4">
         <div class="card-header">Customer Information</div>
         <div class="card-body">
-            <p><strong>Name:</strong> <%= order.address[0].name %></p>
-            <p><strong>Address:</strong> <%= order.address[0].landMark %>, <%= order.address[0].city %>, <%= order.address[0].state %>, <%= order.address[0].pincode %></p>
-            <p><strong>Phone:</strong> <%= order.address[0].phone %></p>
-            <p><strong>Alternate Phone:</strong> <%= order.address[0].altPhone || 'N/A' %></p>
+            <p><strong>Name:</strong> <%= order.address.name %></p>
+            <p><strong>Address:</strong> <%= order.address.landMark %>, <%= order.address.city %>, <%= order.address.state %>, <%= order.address.pincode %></p>
+            <p><strong>Phone:</strong> <%= order.address.phone %></p>
+            <p><strong>Alternate Phone:</strong> <%= order.address.altPhone || 'N/A' %></p>
         </div>
     </div>
 
+    <!-- Ordered Items Table -->
     <div class="table-responsive mb-4">
         <table class="table table-bordered">
             <thead class="table-dark">
@@ -94,22 +104,22 @@
                     <tr>
                         <td><%= item.product.productName %></td>
                         <td><%= item.quantity %></td>
-                        <td>₹<%= item.product.salePrice %></td>
-                        <td>₹<%= (item.product.salePrice * item.quantity).toFixed(2) %></td>
+                        <td>₹<%= item.price %></td>
+                        <td>₹<%= (item.price * item.quantity).toFixed(2) %></td>
                     </tr>
                 <% }); %>
             </tbody>
         </table>
     </div>
 
+    <!-- Payment & Summary -->
     <div class="card">
         <div class="card-header">Payment & Summary</div>
         <div class="card-body">
             <p><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
-            <p><strong>Total Price:</strong> ₹<%= order.totalPrice ? order.totalPrice.toFixed(2) : "0.00" %></p>
-            <p><strong>Discount:</strong> ₹<%= order.discount ? order.discount.toFixed(2) : "0.00" %></p>
-            <p><strong>Final Amount:</strong> ₹<%= order.finalAmount ? order.finalAmount.toFixed(2) : "0.00" %></p>
-            <p><strong>Coupon Applied:</strong> <%= order.couponApplied ? 'Yes' : 'No' %></p>
+            <p><strong>Total Price:</strong> ₹<%= order.finalAmount + order.discount %></p>
+            <p><strong>Discount:</strong> ₹<%= order.discount ? order.discount.toFixed(2) : '0.00' %></p>
+            <p><strong>Final Amount:</strong> ₹<%= order.finalAmount ? order.finalAmount.toFixed(2) : '0.00' %></p>
         </div>
     </div>
 

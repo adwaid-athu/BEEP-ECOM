@@ -51,6 +51,7 @@
           <tr>
             <th>Name</th>
             <th>Description</th>
+            <th>Applied Offer</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -59,6 +60,7 @@
           <tr>
             <td><%= category.name %></td>
             <td><%= category.description %></td>
+            <td><%=category.offer?category.offer.title:"None"%></td>
             <td>
               <button
   onclick="<%= category.isListed ? 'handleUnlist(\'' + category._id + '\')' : 'handleList(\'' + category._id + '\')' %>"
@@ -106,6 +108,7 @@
 
     const name = document.getElementById("categoryName").value;
     const description = document.getElementById("categoryDescription").value;
+    
 
     fetch("/admin/addCategory",{
       method: "POST",

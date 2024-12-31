@@ -204,6 +204,17 @@
             </select>
             <div id="productBrandError" class="error"></div>
 
+            <label class="form-label">Offer</label>
+            <select id="offer" name="offer" class="form-select shadow form-control">
+                <option value="">None</option> 
+                <% offers.forEach(offer => { %>
+                    <option value="<%= offer._id %>">
+                        <%= offer.title %>
+                    </option>
+                <% }) %>
+            </select>
+            
+
             <label for="productImage">Product Image</label>
             <input type="file" id="fileInput" name="images" accept="image/jpeg, image/jpg, image/png, image/gif"
                 multiple>

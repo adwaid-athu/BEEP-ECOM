@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Brand</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="container mt-5 edit-brand-container">
+        <h2 class="text-center mb-4">Edit Brand</h2>
+        <form id="editBrandForm" class="edit-brand-form">
+          <div class="form-group">
+            <label for="brandName" class="form-label">Brand Name</label>
+            <input
+              type="text"
+              id="brandName"
+              name="name"
+              class="form-control"
+              value="<%= brand.brandName %>"
+            />
+            <span id="nameError" class="text-danger error-message" name="errorMessage"></span>
+          </div>
+      
+          <label class="form-label">Offer</label>
+          <select name="offer" class="form-select shadow form-control">
+              <option value="" <%= !brand.offer ? 'selected' : '' %>>None</option>
+              <% offers.forEach(offer => { %>
+                  <option value="<%= offer._id %>" <%= offer._id.equals(brand.offer) ? 'selected' : '' %>>
+                      <%= offer.title %>
+                  </option>
+              <% }); %>
+          </select>
+      
+          <div class="form-actions mt-4">
+            <button type="submit" class="btn btn-primary save-btn">Save Changes</button>
+            <a href="/admin/brand" class="btn btn-secondary cancel-btn">Cancel</a>
+          </div>
+        </form>
+      </div>
+      <style>
+        .edit-brand-container {
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f9f9f9;
+          border-radius: 8px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+      
+        .edit-brand-form {
+          background-color: white;
+          padding: 20px;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+      
+        .text-center {
+          text-align: center;
+        }
+      
+        .form-label {
+          font-weight: 600;
+          color: #333;
+        }
+      
+        .form-control {
+          width: 100%;
+          padding: 10px;
+          border: 1px solid #ced4da;
+          border-radius: 4px;
+          box-sizing: border-box;
+          transition: border-color 0.3s ease;
+        }
+      
+        .form-control:focus {
+          border-color: #007bff;
+          outline: none;
+        }
+      
+        .form-group {
+          margin-bottom: 15px;
+        }
+      
+        .error-message {
+          color: firebrick;
+          font-size: 0.9rem;
+          margin-top: 5px;
+          display: none;
+        }
+      
+        .form-actions {
+          display: flex;
+          justify-content: space-between;
+        }
+      
+        .btn {
+          padding: 10px 20px;
+          border-radius: 4px;
+          font-weight: bold;
+        }
+      
+        .btn-primary {
+          background-color: #007bff;
+          color: white;
+          border: none;
+        }
+      
+        .btn-primary:hover {
+          background-color: #0056b3;
+        }
+      
+        .btn-secondary {
+          background-color: #6c757d;
+          color: white;
+          border: none;
+        }
+      
+        .btn-secondary:hover {
+          background-color: #5a6268;
+        }
+      
+        @media (max-width: 768px) {
+          .edit-brand-container {
+            padding: 10px;
+          }
+          .form-actions {
+            flex-direction: column;
+          }
+          .form-actions .btn {
+            width: 100%;
+            margin-bottom: 10px;
+          }
+        }
+      </style>
+        
+      <script>
+        document.getElementById("editBrandForm").addEventListener("submit", handleFormSubmit);
+      
+        function handleFormSubmit(event) {
+          event.preventDefault();
+          if (!validateForm()) {
+            return;
+          }
+          
+          const name = document.getElementById("brandName").value;
+          const brandId = "<%= brand._id %>"; 
+          const offer = document.querySelector("select[name='offer']").value;
+
+          fetch(`/admin/editBrand/${brandId}`, {
+            method: "POST",
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({name,offer})
+         
+            
+          })
+          .then(response => {
+            if (!response.ok) {
+              return response.json().then(err => {
+                throw new Error(err.error);
+              });
+            }
+            return response.json(); 
+          })
+          .then(data => {
+            if(data.success){
+              Swal.fire({
+                icon: "success",
+                title: "Brand updated successfully",
+                timer: 1000,
+                showConfirmButton: false,
+              }).then(() => {
+                setTimeout(() => {
+                  window.location.href = "/admin/brand"; 
+                }, 1000);
+              });
+            }
+          })
+          .catch(error => {
+            Swal.fire({
+              icon: "error",
+              title: "Oops",
+              text: "An error occurred while updating the brand",
+            });
+          });
+        }
+      
+        function validateForm() {
+          clearErrorMessage();
+      
+          const name = document.getElementById("brandName").value.trim();
+          let isValid = true;
+      
+          if (name === "") {
+            displayErrorMessage("nameError", "Please enter a name");
+            isValid = false;
+          } else if (!/^[a-zA-Z\s]+$/.test(name)) {
+            displayErrorMessage("nameError", "Brand name should only contain alphabetic characters");
+            isValid = false;
+          }
+      
+          return isValid;
+        }
+      
+        function displayErrorMessage(elementId, message) {
+          var errorElement = document.getElementById(elementId);
+          errorElement.textContent = message;
+          errorElement.style.display = "block";
+        }
+      
+        function clearErrorMessage() {
+          const errorElements = document.querySelectorAll("[name='errorMessage']");
+          errorElements.forEach((element) => {
+            element.innerText = "";
+            element.style.display = 'none';
+          });
+        }
+      </script>    
+</body>
+</html>

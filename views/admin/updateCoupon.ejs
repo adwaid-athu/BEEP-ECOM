@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Coupon</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h1 class="text-center">Update Coupon</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <!-- Update Coupon Form -->
+            <form id="updateCouponForm" action="/admin/coupon/update/<%= coupon._id %>" method="POST" novalidate>
+                <div class="form-group">
+                    <label for="couponCode">Coupon Code:</label>
+                    <input type="text" class="form-control" id="couponCode" name="couponCode" value="<%= coupon.couponCode %>" required>
+                    <small class="form-text text-danger" id="couponCodeError"></small>
+                </div>
+                <div class="form-group">
+                    <label for="expireOn">Expire On:</label>
+                    <input type="date" class="form-control" id="expireOn" name="expireOn" value="<%= coupon.expireOn.toISOString().split('T')[0] %>" required>
+                    <small class="form-text text-danger" id="expireOnError"></small>
+                </div>
+                <div class="form-group">
+                    <label for="offerPrice">Offer Price:</label>
+                    <input type="number" class="form-control" id="offerPrice" name="offerPrice" value="<%= coupon.offerPrice %>" required>
+                    <small class="form-text text-danger" id="offerPriceError"></small>                
+                </div>
+                <div class="form-group">
+                    <label for="minimumPrice">Minimum Price:</label>
+                    <input type="number" class="form-control" id="minimumPrice" name="minimumPrice" value="<%= coupon.minimumPrice %>" required>
+                    <small class="form-text text-danger" id="minimumPriceError"></small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Update Coupon</button>
+                <a href="/admin/coupon" class="btn btn-secondary">Back to Coupons</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- SweetAlert Confirmation -->
+<script>
+document.getElementById('expireOn').min = new Date().toISOString().split('T')[0];
+
+// Get the couponId from the URL (it's embedded in the form action)
+const couponId = document.getElementById('updateCouponForm').action.split('/').pop();
+
+// Form Submission with Validation
+document.getElementById('updateCouponForm').addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    document.getElementById('couponCodeError').innerText = '';
+    document.getElementById('expireOnError').innerText = '';
+    document.getElementById('offerPriceError').innerText = '';
+    document.getElementById('minimumPriceError').innerText = '';
+
+    const formData = {
+        couponCode: document.getElementById('couponCode').value.trim(),
+        expireOn: document.getElementById('expireOn').value,
+        offerPrice: parseFloat(document.getElementById('offerPrice').value),
+        minimumPrice: parseFloat(document.getElementById('minimumPrice').value)
+    };
+
+    let isValid = true;
+
+    if (formData.couponCode.length < 3) {
+        document.getElementById('couponCodeError').innerText = 'Coupon code must be at least 3 characters long.';
+        isValid = false;
+    }
+
+    if (!formData.expireOn || new Date(formData.expireOn) <= new Date()) {
+        document.getElementById('expireOnError').innerText = 'Expire On date must be a valid future date.';
+        isValid = false;
+    }
+
+    if (isNaN(formData.offerPrice) || formData.offerPrice <= 0) {
+        document.getElementById('offerPriceError').innerText = 'Offer Price must be a positive number.';
+        isValid = false;
+    }
+
+    if (isNaN(formData.minimumPrice) || formData.minimumPrice <= formData.offerPrice) {
+        document.getElementById('minimumPriceError').innerText = 'Minimum Price must be greater than offerPrice.';
+        isValid = false;
+    }
+
+    if (!isValid) {
+        return; 
+    }
+
+    try {
+        const response = await fetch(`/admin/coupon/update/${couponId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: result.message, 
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                
+                window.location.href = "/admin/coupon";
+            });
+        } else {
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: result.message, 
+            });
+        }
+    } catch (error) {
+       
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An unexpected error occurred.'
+        });
+    }
+});
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.0/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>

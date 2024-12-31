@@ -14,7 +14,7 @@
   opacity: 0.9;
 }
 .mfp-removing.mfp-ready.mfp-bg {
-  opacity: 0;
+  opacity: 100;
 }
 .mfp-wrap {
   top: 0;

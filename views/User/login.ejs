@@ -37,7 +37,8 @@
                         <div class="form-group">
                             <label>Password *</label>
                             <input type="password" class="form-control" id="password" name="password" >
-                            <div id="passStat" class="text-danger"></div> <!-- Error message for password -->
+                            <div id="passStat" class="text-danger"></div> 
+                           <!-- Error message for password -->
                         </div><!-- End .form-group -->
 
                         <div class="form-footer">
@@ -103,6 +104,17 @@
                 }
             });
         }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const message = urlParams.get('message'); // Get the 'message' parameter from URL
+
+            if (message) {
+                const messageElement = document.getElementById('emailStat');
+                messageElement.innerText = decodeURIComponent(message); // Set the message text
+            }
+        });
+        
     </script>
 
     <script src="/assets/js/jquery.min.js"></script>

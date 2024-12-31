@@ -23,7 +23,10 @@ const categorySchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default:Date.now
-    }
+    },offer:{
+        type:Schema.Types.ObjectId,
+        ref:"Offer"
+        }
 
 })
 

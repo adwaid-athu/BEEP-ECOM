@@ -34,6 +34,15 @@
             ><%= category.description %></textarea>
             <span id="descriptionError" class="text-danger error-message" name="errorMessage"></span>
           </div>
+          <label class="form-label">Offer</label>
+          <select name="offer" class="form-select shadow form-control">
+              <option value="" <%= !category.offer ? 'selected' : '' %>>None</option>
+              <% offers.forEach(offer => { %>
+                  <option value="<%= offer._id %>" <%= offer._id.equals(category.offer) ? 'selected' : '' %>>
+                      <%= offer.title %>
+                  </option>
+              <% }); %>
+          </select>
       
           <div class="form-actions mt-4">
             <button type="submit" class="btn btn-primary save-btn">Save Changes</button>
@@ -150,13 +159,14 @@
           const name = document.getElementById("categoryName").value;
           const description = document.getElementById("categoryDescription").value;
           const categoryId = "<%= category._id %>"; 
+          const offer = document.querySelector("select[name='offer']").value;
 
           fetch(`/admin/editCategorySave/${categoryId}`, {
             method: "POST",
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ name, description })
+            body: JSON.stringify({name,description,offer})
           })
           .then(response => {
             if (!response.ok) {

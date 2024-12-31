@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- molla/index-12.html  22 Nov 2019 09:58:43 GMT -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>Beep Audio</title>
+    <meta name="keywords" content="HTML5 Template" />
+    <meta name="description" content="Molla - Bootstrap eCommerce Template" />
+    <meta name="author" content="p-themes" />
+    <!-- Plugins CSS File -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link
+      rel="stylesheet"
+      href="/assets/css/plugins/owl-carousel/owl.carousel.css"
+    />
+    <link
+      rel="stylesheet"
+      href="/assets/css/plugins/magnific-popup/magnific-popup.css"
+    />
+    <!-- Main CSS File -->
+    <link rel="stylesheet" href="/assets/css/style.css" />
+    <link rel="stylesheet" href="/assets/css/demos/demo-12.css" />
+  </head>
+        <main class="main">
+        	<div class="page-header text-center" style="background-image: url('assets/images/page-header-bg.jpg')">
+        		<div class="container">
+        			<h1 class="page-title">Wishlist<span>Shop</span></h1>
+        		</div><!-- End .container -->
+        	</div><!-- End .page-header -->
+            <nav aria-label="breadcrumb" class="breadcrumb-nav">
+                <div class="container">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Wishlist</li>
+                    </ol>
+                </div><!-- End .container -->
+            </nav><!-- End .breadcrumb-nav -->
+
+            <div class="page-content">
+            	<div class="container">
+					<table class="table table-wishlist table-mobile">
+						<thead>
+							<tr>
+								<th>Product</th>
+								<th>Price</th>
+								<th>Stock Status</th>
+								<th></th>
+								<th></th>
+							</tr>
+						</thead>
+
+						<tbody>
+              <% items.forEach(item => { %>
+							<tr>
+								<td class="product-col">
+									<div class="product">
+										<figure class="product-media">
+											<a href="#">
+												<img src="upload/product-images/<%= item.product.productImage[0] %>" alt="Product image">
+											</a>
+										</figure>
+
+										<h3 class="product-title">
+											<a><%= item.product.productName%></a>
+										</h3><!-- End .product-title -->
+									</div><!-- End .product -->
+								</td>
+								<td class="price-col">₹<%= item.product.salePrice %></td>
+                <% if (item.product.status=="Available") { %>
+                  <td class="stock-col"><span class="in-stock"><%= item.product.status %></span></td>
+                  <td class="action-col">
+                    <button onclick="addToCart(`<%=item.product._id%>`)" class="btn btn-block btn-outline-primary-2"><i class="icon-cart-plus"></i>Add to Cart</button>
+                  </td>
+                <% }else{ %>
+                <td class="stock-col"><span class="out-of-stock"><%= item.product.status %></span></td>
+                <td class="action-col">
+                  <button class="btn btn-block btn-outline-primary-2 disabled">Out of Stock</button>
+                </td>
+                <% } %>
+								<td class="remove-col"><button onclick="removeFromWishlist(`<%=item.product._id%>`)" class="btn-remove"><i class="icon-close"></i></button></td>
+							</tr>
+                            <% }) %>
+						</tbody>
+					</table><!-- End .table table-wishlist -->
+            	</div><!-- End .container -->
+            </div><!-- End .page-content -->
+        </main><!-- End .main -->
+    <!-- Plugins JS File -->
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/jquery.hoverIntent.min.js"></script>
+    <script src="assets/js/jquery.waypoints.min.js"></script>
+    <script src="assets/js/superfish.min.js"></script>
+    <script src="assets/js/owl.carousel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Main JS File -->
+    <script src="assets/js/main.js"></script>
+</body>
+<script>
+  function addToCart(productId) {
+    try {
+      fetch(`/addToCart/${productId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            Swal.fire({
+              title: "Added to Cart!",
+              text: data.message || "The product was added to your cart.",
+              icon: "success",
+              timer: 1500,
+            });
+          } else {
+            Swal.fire({
+              title: "Error",
+              text:
+                data.message ||
+                "Could not add the product to your cart.",
+              icon: "error",
+              confirmButtonText: "OK",
+            });
+          }
+        });
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      Swal.fire({
+        title: "Error",
+        text: "Something went wrong while adding to cart.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+  }
+
+  function removeFromWishlist(productId) {
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'Do you really want to remove this product from your wishlist?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, remove it!',
+    cancelButtonText: 'No, keep it',
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        // Sending a DELETE request using fetch
+        const response = await fetch('/removeWishlist', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ productId }),  // Send the productId to backend
+        });
+
+        // Check if response is okay
+        if (!response.ok) {
+          throw new Error('Failed to remove item from wishlist');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          Swal.fire('Removed!', data.message, 'success').then(()=>{
+            window.location.reload()
+          }) // Show success message
+        } else {
+          Swal.fire('Error', data.message, 'error');
+        }
+      } catch (error) {
+        Swal.fire('Error', error.message || 'Something went wrong. Please try again.', 'error');
+      }
+    }
+  });
+}
+
+
+</script>
+
+<!-- molla/wishlist.html  22 Nov 2019 09:55:06 GMT -->
+</html>

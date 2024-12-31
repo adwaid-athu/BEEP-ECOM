@@ -16445,8 +16445,7 @@ table tr:nth-child(even) {
 table tr:hover {
   background-color: #f1f1f1;
 }
-
-.block-btn, .delete-btn,.unblock-btn {
+.block-btn, .delete-btn,.unblock-btn,.edit-btn {
   padding: 8px 15px;
   border: none;
   border-radius: 5px;
@@ -16484,6 +16483,11 @@ table tr:hover {
 .pagination {
   text-align: center;
 }
+.edit-btn {
+  background-color: steelblue;
+  color: white;
+}
+
 
 .pagination a {
   

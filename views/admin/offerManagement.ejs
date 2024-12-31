@@ -1,0 +1,189 @@
+<%- include('../partials/admin/adminHeader.ejs') %>
+<div class="container mt-5">
+    <h1 class="text-center">Offer Management</h1>
+
+    <div class="text-right mb-3">
+        <a href="/admin/offer/add" class="btn btn-success">Add New Offer</a>
+    </div>
+
+    <h2 class="text-center mb-4">All Offers</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered custom-table">
+            <thead class="thead-dark">
+                <tr>
+                    <th class="offer-title">Offer Title</th>
+                    <th class="description">Description</th>
+                    <th class="discount-value">Discount Value</th>
+                    <th class="status">Status</th>
+                    <th class="actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% offers.forEach(offer => { %>
+                    <tr>
+                        <td><%= offer.title %></td>
+                        <td><%= offer.description || 'No Description' %></td>
+                        <td><%= offer.discount %>%</td>
+                        <td>
+                            <span class="badge <%= offer.isActive ? 'bg-success' : 'bg-danger' %>">
+                                <%= offer.isActive ? 'Active' : 'Inactive' %>
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger btn-sm action-btn" onclick="confirmDelete('<%= offer._id %>')">Delete</button>
+                            <a href="/admin/offer/update/<%= offer._id %>" class="btn btn-warning btn-sm action-btn">Update</a>
+                            <% if (offer.isActive) { %>
+                                <button class="btn btn-danger btn-sm action-btn" onclick="confirmToggle('<%= offer._id %>')">Deactivate</button>
+                            <% } else { %>
+                                <button class="btn btn-success btn-sm action-btn" onclick="confirmToggle('<%= offer._id %>')">Activate</button>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            <% if (currentPage > 1) { %>
+                <li class="page-item">
+                    <a class="page-link" href="?page=<%= currentPage - 1 %>">&laquo;</a>
+                </li>
+            <% } %>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                    <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                </li>
+            <% } %>
+            <% if (currentPage < totalPages) { %>
+                <li class="page-item">
+                    <a class="page-link" href="?page=<%= currentPage + 1 %>">&raquo;</a>
+                </li>
+            <% } %>
+        </ul>
+    </nav>
+</div>
+
+<script>
+function confirmToggle(id){
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'Offer Will Be Toggled',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes,Toggle it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/admin/offer/toggle/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                        location.reload();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'There was an error toggling the offer.',
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Something went wrong, please try again later.',
+                });
+            });
+        }
+    });
+}
+
+
+
+function confirmDelete(id){
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'Offer Will Be Deleted',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, Delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/admin/offer/delete/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'Offer has been deleted successfully.',
+                        showConfirmButton: false,
+                        timer: 2000
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'There was an error deleting the offer.',
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Something went wrong, please try again later.',
+                });
+            });
+        }
+    });
+}
+</script>
+
+<style>
+    .custom-table .offer-title {
+        width: 30%;
+    }
+
+    .custom-table .description {
+        width: 30%;
+    }
+
+    .custom-table .discount-value {
+        width: 20%;
+    }
+
+    .custom-table .status {
+        width: 10%;
+    }
+
+    .custom-table .actions {
+        width: 20%;
+    }
+</style>
+
+<!-- Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.0/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>
+

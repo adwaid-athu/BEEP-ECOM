@@ -10,6 +10,7 @@ const bodyParser = require("body-parser");
 const { MongoClient } = require("mongodb");
 const { redirect, message } = require("statuses");
 const { session } = require("passport");
+const mongoose = require("mongoose")
 
 const loadUserHome = async (req, res) => {
   try {
@@ -25,99 +26,149 @@ const loadUserHome = async (req, res) => {
 };
 
 
+
 const loadShop = async (req, res) => {
   try {
-      const { categories, brands, minPrice, maxPrice, sortby, page = 1, limit = 10, q } = req.query;
+    const {
+      categories,
+      brands,
+      minPrice,
+      maxPrice,
+      sortby,
+      page = 1,
+      limit = 10,
+      q,
+    } = req.query;
 
-     
-      const allCategories = await Category.find(); 
-      const allBrands = await Brand.find(); 
+    const allCategories = await Category.find();
+    const allBrands = await Brand.find();
 
-      
-      let filter = { isBlocked: false, status: "Available" };
+    const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
-      
-      if (categories) {
-          const categoryArray = Array.isArray(categories) ? categories : [categories];
-          filter.category = { $in: categoryArray.map(id => id.toString().trim()).filter(Boolean) };
+    const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    let filter = { isBlocked: false, status: 'Available' };
+
+    if (categories) {
+      const categoryArray = Array.isArray(categories) ? categories : [categories];
+      const validCategories = categoryArray
+        .map((id) => id.trim())
+        .filter(Boolean)
+        .filter(isValidObjectId);
+      if (validCategories.length > 0) {
+        filter.category = { $in: validCategories };
       }
+    }
 
-      
-      if (brands) {
-          const brandArray = Array.isArray(brands) ? brands : [brands];
-          const filteredBrands = brandArray.map(id => id.toString().trim()).filter(Boolean);
-          filter.brand = { $in: filteredBrands };
+    if (brands) {
+      const brandArray = Array.isArray(brands) ? brands : [brands];
+      const validBrands = brandArray
+        .map((id) => id.trim())
+        .filter(Boolean)
+        .filter(isValidObjectId);
+      if (validBrands.length > 0) {
+        filter.brand = { $in: validBrands };
       }
+    }
 
-      
-      if (minPrice || maxPrice) {
-          filter.salePrice = {};
-          if (minPrice) {
-              filter.salePrice.$gte = Number(minPrice);
-          }
-          if (maxPrice) {
-              filter.salePrice.$lte = Number(maxPrice);
-          }
-      }
+    if (minPrice || maxPrice) {
+      filter.salePrice = {};
+      if (minPrice) filter.salePrice.$gte = Number(minPrice);
+      if (maxPrice) filter.salePrice.$lte = Number(maxPrice);
+    }
 
-      
-      if (q) {
-          filter.productName = { $regex: new RegExp(q, 'i') }; 
-      }
+    if (q) {
+      filter.productName = { $regex: new RegExp(escapeRegex(q), 'i') };
+    }
 
-      
-      const totalProducts = await Product.countDocuments(filter);
-      const totalPages = Math.ceil(totalProducts / limit);
-      const offset = (page - 1) * limit;
+    // Log the filter for debugging
+    console.log('Constructed Filter:', filter);
 
-     
-      let products = await Product.find(filter)
-          .populate("category brand")
-          .skip(offset) 
-          .limit(Number(limit)) 
-          .lean();
+    // Pagination setup
+    const totalProducts = await Product.countDocuments(filter);
+    const totalPages = Math.ceil(totalProducts / limit);
+    const offset = (page - 1) * limit;
 
-      if (sortby === "low-to-high") {
-          products.sort((a, b) => a.salePrice - b.salePrice);
-      } else if (sortby === "high-to-low") {
-          products.sort((a, b) => b.salePrice - a.salePrice);
-      } else if (sortby === "a-z") {
-          products.sort((a, b) => a.productName.localeCompare(b.productName));
-      } else if (sortby === "z-a") {
-          products.sort((a, b) => b.productName.localeCompare(a.productName));
-      } else if (sortby === "new-arrivals") {
-          products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      } else if (sortby === "old-arrivals") {
-          products.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-      }
+    const sortOptions = {
+      'low-to-high': { salePrice: 1 },
+      'high-to-low': { salePrice: -1 },
+      'a-z': { productName: 1 },
+      'z-a': { productName: -1 },
+      'new-arrivals': { createdAt: -1 },
+      'old-arrivals': { createdAt: 1 },
+    };
+    const sort = sortOptions[sortby] || {};
 
-      res.render("shop", {
-          products,
-          categories: allCategories,
-          brands: allBrands,
-          selectedCategories: categories ? (Array.isArray(categories) ? categories : [categories]).map(id => id.trim()) : [],
-          selectedBrands: brands ? (Array.isArray(brands) ? brands : [brands]).map(id => id.trim()) : [],
-          priceMin: minPrice || 0,
-          priceMax: maxPrice || 1000,
-          sort: sortby || "",
-          currentPage: Number(page),
-          totalPages 
-      });
+    const products = await Product.find(filter)
+      .populate({
+        path: 'brand',
+        populate: { path: 'offer', model: 'Offer' },
+      })
+      .populate({
+        path: 'category',
+        populate: { path: 'offer', model: 'Offer' },
+      })
+      .populate({
+        path: 'offer',
+        model: 'Offer',
+      })
+      .sort(sort) 
+      .skip(offset)
+      .limit(Number(limit))
+      .lean()
+      .exec();
+
+    console.log('Retrieved Products:', products);
+
+    res.render('shop', {
+      products,
+      categories: allCategories,
+      brands: allBrands,
+      selectedCategories: categories
+        ? Array.isArray(categories)
+          ? categories.map((id) => id.trim())
+          : [categories.trim()]
+        : [],
+      selectedBrands: brands
+        ? Array.isArray(brands)
+          ? brands.map((id) => id.trim())
+          : [brands.trim()]
+        : [],
+      priceMin: minPrice || '',
+      priceMax: maxPrice || '',
+      sort: sortby || '',
+      currentPage: Number(page),
+      totalPages,
+    });
   } catch (error) {
-      console.error(error);
-      res.status(500).send("Server Error");
+    console.error('Error in loadShop:', error);
+    res.status(500).send('Server Error');
   }
 };
-
-
 
 const loadProduct = async (req, res) => {
   try {
     const {productId} = req.query
     const product = await Product.findById(productId)
-      .populate('brand')
-      .populate('category')
-      .exec();
+    .populate({
+      path: 'brand', 
+      populate: {
+        path: 'offer', 
+        model: 'Offer'
+      }
+    })
+    .populate({
+      path: 'category', 
+      populate: {
+        path: 'offer', 
+        model: 'Offer'
+      }
+    })
+    .populate({
+      path: 'offer', 
+      model: 'Offer'
+    })
+    .exec();
     res.render('product', {product});
   } catch (error) {
     console.error(error);

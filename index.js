@@ -7,18 +7,22 @@ const passport = require("./config/passport")
 const db = require("./config/db");
 const userRouter = require("./routes/userRouter");
 const adminRouter = require("./routes/adminRouter")
+const paymentRouter = require("./routes/paymentRouter");
 const nocache = require("nocache");
+const cors = require("cors")
 db();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(nocache());
+app.use(cors())
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
-    cookie: { maxAge: 259200000,secure:false }, 
+    saveUninitialized: false,
+    cookie: { maxAge: 2592000,secure:false }, 
   })
 );
 
@@ -39,10 +43,15 @@ app.use((req, res, next) => {
 
 
 app.use("/", userRouter);
-app.use("/",adminRouter)
+app.use("/",adminRouter);
+app.use("/",paymentRouter)
 
-app.listen(process.env.PORT, () => {
-  console.log("Server running http://localhost:3000");
+
+const PORT = process.env.PORT || 3000; 
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}/`);
 });
+
+
 
 module.exports = app;

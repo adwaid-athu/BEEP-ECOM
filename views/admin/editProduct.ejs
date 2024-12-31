@@ -217,6 +217,16 @@
                 <option value="Discontinued" <%=product.status==='Discontinued' ? 'selected'
                     : '' %>>Discontinued</option>
             </select>
+            <label class="form-label">Offer</label>
+            <select name="offer" class="form-select shadow form-control">
+                <option value="" <%= !product.offer ? 'selected' : '' %>>None</option>
+                <% offers.forEach(offer => { %>
+                    <option value="<%= offer._id %>" <%= offer._id.equals(product.offer) ? 'selected' : '' %>>
+                        <%= offer.title %>
+                    </option>
+                <% }); %>
+            </select>
+            
             <label class="form-label">Add New Images</label>
             <input type="file" name="images" class="form-control shadow" id="fileInput" accept="image/jpeg, image/jpg, image/png, image/gif" multiple onchange="previewImages(event)">
             <div id="productImageError" class="error"></div>

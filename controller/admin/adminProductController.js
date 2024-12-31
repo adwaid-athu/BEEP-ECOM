@@ -1,6 +1,7 @@
 const Product = require("../../Models/productSchema")
 const Brand = require("../../Models/brandSchema")
 const Category = require("../../Models/categorySchema")
+const Offer= require("../../Models/offerSchema")
 const User = require("../../Models/userSchema")
 const fs = require("fs")
 const path = require("path")
@@ -9,6 +10,7 @@ const { CANCELLED } = require("dns")
 const { message } = require("statuses")
 const { error } = require("console")
 const { editCategory } = require("./adminCategoryController")
+const { off } = require("process")
 
 const loadProduct = async (req, res) => {
     try {
@@ -27,6 +29,7 @@ const loadProduct = async (req, res) => {
         .limit(limit)
         .populate('category')
         .populate('brand')
+        .populate('offer')
         .exec();
 
         const totalPages = Math.ceil(totalProducts / limit); 
@@ -48,10 +51,13 @@ const loadAddProduct = async(req,res)=>{
     try { 
         const category = await Category.find({isListed:true})
         const brand = await Brand.find({isBlocked:false})
+        const offer = await Offer.find({isActive:true})
 
         res.render("adminAddProduct",{
             categories:category,
-            brands:brand
+            brands:brand,
+            offers:offer,
+
         })    
     } catch (error) {
         console.error(error,"error rendering addProduct")
@@ -83,7 +89,7 @@ const addProduct = async (req, res) => {
             }
 
             const newFormData = new Product({
-                productName: formData.productName, 
+                productName: formData.productName,
                 description: formData.productDescription,
                 brand: formData.productBrand,
                 category: formData.productCategory,
@@ -92,9 +98,10 @@ const addProduct = async (req, res) => {
                 createdAt: new Date(),
                 quantity: formData.quantity,
                 productImage: images,
-                status: "Available"
+                status: "Available",
+                ...(formData.offer && formData.offer !== "None" && { offer: formData.offer })
             });
-
+            
             await newFormData.save();
             
             return res.redirect("/admin/products")
@@ -149,9 +156,10 @@ const loadEditProduct = async(req,res)=>{
     try {
         const {id} = req.params
         const product = await Product.findOne({ _id:id }).populate('category') 
-        .populate('brand') 
+        .populate('brand').populate("offer")
         const category = await Category.find({isListed:true})
         const brand = await Brand.find({isBlocked:false})
+        const offer = await Offer.find({isActive:true})
 
         if(product){
             res.render("editProduct",{
@@ -159,6 +167,7 @@ const loadEditProduct = async(req,res)=>{
                 product:product,
                 categories:category,
                 brands:brand,
+                offers:offer,
                 productImages:product.productImage
             })
             res.status(200)
@@ -222,22 +231,28 @@ const editProduct = async (req, res) => {
             }
         }
 
-        await Product.updateOne(
-            { _id: id },
-            {
-                $set: {
-                    productName: formData.productName,
-                    description: formData.productDescription,
-                    brand: formData.productBrand,
-                    category: formData.productCategory,
-                    regularPrice: formData.regularPrice,
-                    salePrice: formData.salePrice,
-                    quantity: formData.quantity,
-                    status: formData.status,
-                    productImage: images, 
-                }
-            }
-        );
+        const updateQuery = {
+            $set: {
+                productName: formData.productName,
+                description: formData.productDescription,
+                brand: formData.brands,
+                category: formData.category,
+                regularPrice: formData.regularPrice,
+                salePrice: formData.salePrice,
+                quantity: formData.quantity,
+                status: formData.status,
+                productImage:images,
+            },
+        };
+        
+        if (formData.offer === "") {
+            updateQuery.$unset = { offer: "" };
+        } else {
+            updateQuery.$set.offer = formData.offer;
+        }
+        
+        await Product.updateOne({ _id: id }, updateQuery);
+        
 
         res.status(200).json({ success: true, message: 'Product updated successfully!' });
 

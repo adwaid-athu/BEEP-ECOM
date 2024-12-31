@@ -15,7 +15,11 @@ const brandSchema = new Schema({
     createdAt: {
         type:Date,
         default:Date.now
-    }
+    },
+    offer:{
+        type:Schema.Types.ObjectId,
+        ref:"Offer"
+        }
 
 })
 

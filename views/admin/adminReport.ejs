@@ -1,0 +1,200 @@
+<%- include('../partials/admin/adminHeader.ejs') %>
+
+<div class="container mt-5">
+  <h2 class="mb-4">Sales Report</h2>
+
+<!-- Filters -->
+<div class="filter-container mb-4">
+  <select
+  id="reportType"
+  class="form-select w-auto d-inline"
+  onchange="fetchSalesReport()"
+>
+  <option value="daily" <%= type === "daily" ? "selected" : "" %>>Daily</option>
+  <option value="weekly" <%= type === "weekly" ? "selected" : "" %>>Weekly</option>
+  <option value="yearly" <%= type === "yearly" ? "selected" : "" %>>Yearly</option>
+  <option value="custom" <%= type === "custom" ? "selected" : "" %>>Custom Date</option>
+</select>
+
+<!-- Custom Date Fields -->
+<div id="customDateContainer" class="d-inline" style="<%= type === 'custom' ? 'display: inline;' : 'display: none;' %>">
+  <input
+    type="date"
+    id="startDate"
+    class="form-control d-inline w-auto mx-2"
+   w
+  />
+  <input
+    type="date"
+    id="endDate"
+    class="form-control d-inline w-auto mx-2"
+  
+  />
+  <button class="btn btn-primary btn-sm" onclick="fetchCustomReport()">Apply</button>
+</div>
+
+</div>
+
+  <div class="mb-4">
+    <button class="btn btn-danger" onclick="downloadPDF()">Download PDF</button>
+    <button class="btn btn-success" onclick="downloadExcel()">
+      Download Excel
+    </button>
+  </div>
+
+  <!-- Sales Table -->
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped">
+      <thead class="table-dark">
+        <tr>
+          <th>Date</th>
+          <th>Total Orders</th>
+          <th>Total Revenue</th>
+          <th>Total Discounts</th>
+          <th>Net Sales</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (salesData.length > 0) { %> <% salesData.forEach(sale => { %>
+        <tr>
+          <% if (type==="custom") { %>
+            <td><%=startDate%> To <%= endDate %></td>
+          <% }else{ %>
+            <td><%=sale.date%></td>
+            <% } %>
+          <td><%= sale.totalOrders %></td>
+          <td><%=sale.totalRevenue%></td>
+          <td><%=sale.totalDiscount%></td>
+          <td><%=sale.netSales%></td>
+        </tr>
+        <% }); %> <% } else { %>
+        <tr>
+          <td colspan="5" class="text-center">No sales data found.</td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center mt-4">
+      <% for (let i = 1; i <= totalPages; i++) { %>
+      <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+        <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+      </li>
+      <% } %>
+    </ul>
+  </nav>
+</div>
+
+<%- include('../partials/admin/adminFooter.ejs') %>
+
+<script>
+
+  function fetchSalesReport() {
+    const reportType = document.getElementById("reportType").value;
+
+    if (reportType === "custom") {
+      document.getElementById("customDateContainer").style.display = "inline";
+    } else {
+      document.getElementById("customDateContainer").style.display = "none";
+
+      window.location.href = `/admin/report?type=${reportType}`;
+    }
+  }
+
+  
+  function fetchCustomReport() {
+    const startDate = document.getElementById("startDate").value;
+    const endDate = document.getElementById("endDate").value;
+
+    if (!startDate || !endDate) {
+      Swal.fire("Error", "Please select a valid date range.", "error");
+      return;
+    }
+
+    window.location.href = `/admin/report?type=custom&startDate=${startDate}&endDate=${endDate}`;
+  }
+
+
+  async function downloadExcel() {
+  const reportType = document.getElementById("reportType").value;
+
+  try {
+    const response = await fetch("/admin/sales-report/excel", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ type: reportType }),
+    });
+
+    if (!response.ok) {
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to download Excel.");
+      } catch (jsonError) {
+        throw new Error("Unexpected error occurred while downloading Excel.");
+      }
+    }
+
+    const blob = await response.blob();
+
+    const fileName = `sales-report-${reportType}-${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+  } catch (error) {
+    Swal.fire("Error", error.message, "error");
+  }
+}
+
+
+
+async function downloadPDF() {
+  const reportType = document.getElementById("reportType").value;
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
+
+  
+
+  try {
+    const response = await fetch("/admin/sales-report/pdf", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ type: reportType, startDate, endDate }),
+    });
+
+    if (!response.ok) {
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to download PDF. Status: ${response.status}`);
+      } catch (jsonError) {
+        throw new Error(`Unexpected error occurred while downloading PDF. Status: ${response.status}`);
+      }
+    }
+
+    const blob = await response.blob();
+
+    const fileName = `sales-report-${reportType}-${new Date().toISOString().slice(0, 10)}.pdf`;
+
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+
+    
+    window.URL.revokeObjectURL(link.href);
+  } catch (error) {
+    Swal.fire("Error", error.message, "error");
+  }
+}
+
+
+
+</script>

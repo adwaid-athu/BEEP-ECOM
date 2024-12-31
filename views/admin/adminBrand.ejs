@@ -42,6 +42,7 @@
       <thead>
         <tr>
           <th>Brand Name</th>
+          <th>Applied Offer</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -50,6 +51,7 @@
           <% data.forEach(brand => { %>
             <tr>
               <td><%= brand.brandName %></td>
+              <td><%=brand.offer?brand.offer.title:"None"%></td>
               <td>
                 <% if (brand.isBlocked) { %>
                   <button class="unblock-btn" onclick="handleUnblock('<%= brand._id %>')">Unblock</button>
@@ -57,6 +59,8 @@
                   <button class="block-btn" onclick="handleBlock('<%= brand._id %>')">Block</button>
                 <% } %>
                 <button class="delete-btn" onclick="handleDelete('<%= brand._id %>')">Delete</button>
+                
+                <a href="/admin/editBrand/<%= brand._id %>"><button class="edit-btn">Edit</button></a>
               </td>
             </tr>
           <% }); %>

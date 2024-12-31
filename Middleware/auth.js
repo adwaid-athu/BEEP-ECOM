@@ -1,3 +1,7 @@
+
+const User = require("../Models/userSchema")
+
+
 function isLoggedIn(req, res, next) {
     try {
         if (req.session.userData || req.session.user) {
@@ -37,7 +41,23 @@ function OTPcheck(req,res,next){
     }
 }
 
+function isBlocked(req,res,next){
+    try{
+        const user=req.session.user
+        if(user){
+            const userData = User.findById(user)
+            if(userData.isBlocked){
+                res.redirect("/")
+            }            
+            return next()
+        }
+        res.redirect("/")
+    }catch{
+
+    }
+}
 
 
 
-module.exports = {isLoggedIn,isLoggedOut,OTPcheck }
+
+module.exports = {isLoggedIn,isLoggedOut,OTPcheck,isBlocked}

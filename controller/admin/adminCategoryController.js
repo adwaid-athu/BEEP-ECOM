@@ -1,5 +1,6 @@
 const Category = require("../../Models/categorySchema");
 const Product = require("../../Models/productSchema")
+const Offer = require("../../Models/offerSchema")
 
 const loadAdminCategory = async (req, res) => {
     try {
@@ -12,7 +13,7 @@ const loadAdminCategory = async (req, res) => {
             filter = { name: { $regex: search, $options: 'i' } };
         }
 
-        const categories = await Category.find(filter)
+        const categories = await Category.find(filter).populate("offer")
             .skip((page - 1) * limit)
             .limit(limit);
 
@@ -98,32 +99,46 @@ const loadEditCategory = async(req,res)=>{
     try {
         const id = req.params.id
         const category = await Category.findOne({_id:id})
+        const offer = await Offer.find({isActive:true})
         if(category){
-        res.render("editCategory",{category})
+        res.render("editCategory",{category,
+            offers:offer
+        })
         }
     } catch (error) {
         console.log(error);
         res.status(404).json({ error: "page not found" });
     }
 }
-const editCategory = async(req,res)=>{
+const editCategory = async (req, res) => {
     try {
-        console.log('iam in')
-        const {name,description} = req.body
-        const id = req.params.id 
-        console.log(id,name,description)
-        const category = await Category.updateOne({_id:id},{$set:{name:name,description:description}})
-        if(category){
-            return res.status(200).json({success:true})
-        }else{
-            return res.status(500).json({ error: "server error" });
+        const { name, description, offer } = req.body;
+        const id = req.params.id; 
+        if (!name || !description || !id) {
+            return res.status(400).json({ error: "Name, description, and ID are required" });
+        }
 
+        console.log("Updating category:", { id, name, description, offer });
+
+       
+        const updateData = { name, description };
+
+        const updateOperation = offer ? { $set: { ...updateData, offer } } : { $set: updateData, $unset: { offer: "" } }; 
+
+        const result = await Category.updateOne({ _id: id }, updateOperation);
+
+        if (result.modifiedCount > 0) {
+            return res.status(200).json({ success: true });
+        } else {
+            return res.status(404).json({ error: "Category not found or no changes made" });
         }
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ error: "server error" });
+        console.error("Error updating category:", error.message);
+        return res.status(500).json({ error: "An unexpected error occurred" });
     }
-}
+};
+
+    
 
 module.exports = {
     loadAdminCategory,

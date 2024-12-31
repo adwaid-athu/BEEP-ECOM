@@ -2,40 +2,72 @@ const { redirect, message } = require("statuses");
 const User = require("../../Models/userSchema");
 const Address = require("../../Models/addressSchema");
 const Order = require("../../Models/orderSchema")
+const Product = require("../../Models/productSchema") 
+const Wallet = require("../../Models/walletSchema")
+const PDFDocument=require("pdfkit")
+const fs = require('fs')
 const bcrypt = require("bcrypt");
 const { session } = require("passport");
+const mongoose = require("mongoose")
 
 const loadDashBoard = async (req, res) => {
   try {
     const id = req.session.user;
+
     const user = await User.findById(id);
     const addressData = await Address.findOne({ userId: id });
 
-    // Pagination variables
-    const page = parseInt(req.query.page) || 1; // Default to page 1 if no query
-    const limit = 5; // Orders per page
+    const page = parseInt(req.query.page) || 1;
+    const limit = 5;
     const skip = (page - 1) * limit;
 
     const orderData = await Order.find({ userId: id })
-      .sort({ createdAt: -1 }) // Sort by newest first
+      .sort({ createdOn: -1 })
       .skip(skip)
       .limit(limit);
 
     const totalOrders = await Order.countDocuments({ userId: id });
     const totalPages = Math.ceil(totalOrders / limit);
 
+    const walletPage = parseInt(req.query.walletPage) || 1;
+    const walletLimit = 5;
+    const walletSkip = (walletPage - 1) * walletLimit;
+
+    let wallet = await Wallet.findOne({ userId: id });
+
+    if (!wallet) {
+      wallet = new Wallet({
+        userId: id,
+        balance: 0,
+        transactions: [],
+      });
+      await wallet.save();
+    }
+
+    const totalWalletTransactions = wallet.transactions.length;
+    const totalWalletPages = Math.ceil(totalWalletTransactions / walletLimit);
+    const paginatedTransactions = wallet.transactions.slice(walletSkip, walletSkip + walletLimit);
+
     res.render("dashboard", {
       user,
       addressData,
       orderData,
       currentPage: page,
-      totalPages
+      totalPages,
+      walletBalance: wallet.balance,
+      walletTransactions: paginatedTransactions,
+      walletPage,
+      totalWalletPages,
     });
   } catch (error) {
     console.error("Error loading Dashboard", error);
-    return res.status(500).json({ message: "Server Error" });
+    return res.status(500).render("error", { message: "Failed to load the dashboard. Please try again later." });
   }
 };
+
+
+
+
 
 
 ////////////////////////////////////////////// User Details Managment /////////////////////////////////////////////
@@ -184,12 +216,10 @@ const editAddress = async (req, res) => {
       return res.status(500).json({ success: false, message: "User Address Not Found" });
     }
 
-    // Ensure addressNo is within the valid range
     if (addressNo < 1 || addressNo > addressDoc.address.length) {
       return res.status(400).json({ success: false, message: "Invalid Address Number" });
     }
 
-    // Update the specific address (using addressNo - 1 because arrays are zero-indexed)
     addressDoc.address[addressNo - 1] = {
       addressNo,
       addressType,
@@ -202,7 +232,6 @@ const editAddress = async (req, res) => {
       altPhone
     };
 
-    // Save the updated document
     await addressDoc.save();
 
     res.status(200).json({ success: true, message: "Address updated successfully" });
@@ -237,7 +266,8 @@ const deleteAddress = async (req, res) => {
 
    
     userAddress.address = updatedAddresses;
-    await userAddress.save();
+    await userAddress.save();     
+
 
     res.status(200).json({ success: true, message: "Address deleted and numbers updated successfully" });
 
@@ -264,6 +294,62 @@ const viewOrder = async(req,res)=>{
   }
 };
 const cancelOrder = async (req, res) => {
+  
+  const orderId = req.params.id;
+
+  try {
+    const order = await Order.findOne({ orderId }).populate('userId');
+    
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    if (order.status === 'Cancelled') {
+      return res.status(400).json({ message: 'Order is already cancelled' });
+    }
+
+    order.status = 'Cancelled';
+    await order.save();
+
+    if (order.paymentMethod == 'razorPay') {
+      const user = order.userId;  
+      const refundAmount = order.finalAmount;
+      console.log(refundAmount)
+      let wallet = await Wallet.findOne({ userId: user._id });
+
+      if (!wallet) {
+        wallet = new Wallet({
+          userId: user._id,
+          balance: 0,
+          transactions: [],
+        });
+      }
+      console.log("iu")
+
+      wallet.balance += refundAmount;
+
+      wallet.transactions.push({
+        transactionId: new mongoose.Types.ObjectId(),
+        type: 'credit',
+        amount: refundAmount,
+        date: new Date(),
+        description: `Refund for cancelled order ${orderId}`,
+        orderId: order._id,
+        status: 'completed',
+      });
+
+      await wallet.save();
+    }
+
+    res.status(200).json({ message: 'Order cancelled and refund processed' });
+  } catch (error) {
+    console.error("Error cancelling order:", error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+const returnOrder = async (req, res) => {
   const orderId = req.params.id;
   console.log(orderId)
   try {
@@ -272,17 +358,120 @@ const cancelOrder = async (req, res) => {
           return res.status(404).json({ message: 'Order not found' });
       }
       if (order.status === 'Cancelled') {
-          return res.status(400).json({ message: 'Order is already cancelled' });
+          return res.status(400).json({ message: 'Order is already returned' });
       }
-
-      order.status = 'Cancelled';
+      order.status = 'Return';
       await order.save();
-      res.status(200).json({ message: 'Order cancelled successfully' });
+      res.status(200).json({ message: 'Order return successfully' });
   } catch (error) {
-      console.error("Error cancelling order:", error);
+      console.error("Error return order:", error);
       res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+const downloadInvoice = async (req, res) => {
+  try {
+      const orderId = req.params.id;
+
+      // Fetch the order details, populating the `orderedItems.product` reference with product details (including name)
+      const order = await Order.findOne({ orderId })
+                                .populate('orderedItems.product', 'productName');  // Populate only the `productName` field
+
+      if (!order) {
+          return res.status(404).json({ message: 'Order not found' });
+      }
+
+      const doc = new PDFDocument();
+
+      // Set response headers
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=invoice-${orderId}.pdf`);
+
+      // Pipe the PDF document to the response
+      doc.pipe(res);
+
+      // Add the Title
+      doc.fontSize(16).text('Invoice', { align: 'center' });
+      doc.moveDown();
+
+      // Add Order ID and Invoice Date
+      doc.fontSize(12).text(`Order ID: ${orderId}`, { align: 'left' });
+      doc.text(`Invoice Date: ${new Date(order.invoiceDate).toLocaleDateString()}`, { align: 'left' });
+      doc.moveDown();
+
+      // Add Customer Details
+      doc.text(`Customer ID: ${order.userId}`, { align: 'left' });
+      doc.moveDown();
+
+      // Table headers and dimensions
+      const tableTop = 180;
+      const columnWidth = [200, 100, 100, 100];
+      const rowHeight = 20;
+      const margins = { left: 50, top: tableTop };
+
+      // Header row
+      doc.fontSize(12).text('Item', margins.left, margins.top);
+      doc.text('Quantity', margins.left + columnWidth[0], margins.top);
+      doc.text('Price', margins.left + columnWidth[0] + columnWidth[1], margins.top);
+      doc.text('Total', margins.left + columnWidth[0] + columnWidth[1] + columnWidth[2], margins.top);
+
+      // Draw the header borders
+      columnWidth.forEach((width, index) => {
+          const xPos = margins.left + columnWidth.slice(0, index).reduce((sum, w) => sum + w, 0);
+          doc.rect(xPos, margins.top - 5, width, rowHeight).stroke();
+      });
+
+      // Add data rows
+      if (order.orderedItems && Array.isArray(order.orderedItems)) {
+          order.orderedItems.forEach((item, index) => {
+              const rowY = margins.top + rowHeight + (index * rowHeight);
+
+              // Check if item.product.name exists
+              const productName = item.product?.productName || 'Unknown Product';  // Access productName after population
+
+              doc.text(productName, margins.left, rowY);
+              doc.text(item.quantity || 0, margins.left + columnWidth[0], rowY);
+              doc.text(
+                  (item.price && !isNaN(item.price) ? item.price.toFixed(2) : '0.00'), 
+                  margins.left + columnWidth[0] + columnWidth[1], 
+                  rowY
+              );
+              doc.text(
+                  (item.quantity && !isNaN(item.quantity) ? (item.quantity * item.price).toFixed(2) : '0.00'), 
+                  margins.left + columnWidth[0] + columnWidth[1] + columnWidth[2], 
+                  rowY
+              );
+
+              // Draw borders for the data rows
+              columnWidth.forEach((width, colIndex) => {
+                  const xPos = margins.left + columnWidth.slice(0, colIndex).reduce((sum, w) => sum + w, 0);
+                  doc.rect(xPos, rowY - 5, width, rowHeight).stroke();
+              });
+          });
+      }
+
+      // Add Total Amount
+      const discount = (order.discount && !isNaN(order.discount)) ? order.discount : 0;
+      const finalAmount = (order.finalAmount && !isNaN(order.finalAmount)) ? order.finalAmount : 0;
+
+      const totalY = margins.top + rowHeight + (order.orderedItems.length * rowHeight) + 10;
+      doc.text(`Discount: ${discount.toFixed(2)}`, margins.left, totalY + 20);
+      doc.text(`Final Amount: ${finalAmount.toFixed(2)}`, margins.left, totalY + 40);
+
+      // Add Footer
+      doc.fontSize(10).text('Thank you for your purchase!', { align: 'center', baseline: 'bottom' });
+
+      // End the PDF document stream
+      doc.end();
+  } catch (error) {
+      console.error('Error generating invoice:', error);
+      res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+
+
 
 
 module.exports = {
@@ -298,4 +487,6 @@ module.exports = {
   deleteAddress,
   viewOrder,
   cancelOrder,
+  returnOrder,
+  downloadInvoice,
 };

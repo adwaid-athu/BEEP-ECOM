@@ -114,7 +114,7 @@ const verifyOtp = async (req, res) => {
       res.status(200).json({ success: true,redirectUrl:"/" })
 
     } 
-    //For Forgot Password
+    
     else if(otp === req.session.otp&&req.session.passwordForgotUser){
       res.status(200).json({success:true,redirectUrl:"/resetForgotPassword"})
     }
@@ -185,17 +185,26 @@ const loadOtp = async (req, res) => {
   }
 };
 
-const logout = async(req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error("Failed to destroy session:", err);
-      return res.status(500).send("Failed to destroy session");
-    }
+const logout = async (req, res) => {
+  await req.session.destroy((err) => {
+      if (err) {
+          console.error("Failed to destroy session:", err);
+          return res.status(500).send("Failed to destroy session");
+      }
+      res.clearCookie("connect.sid", { 
+          path: '/', 
+          httpOnly: true,
+          secure: false,
+          expires: new Date(0)
+      });
 
-    res.clearCookie("connect.sid");
-    res.redirect("/");
+      res.clearCookie("ext_name", { path: '/', expires: new Date(0) });
+
+      res.redirect("/login");
   });
 };
+
+
 
 const loadForgotPassword = async(req,res)=>{
     try {

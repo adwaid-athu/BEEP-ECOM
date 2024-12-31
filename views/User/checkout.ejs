@@ -1,279 +1,558 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Checkout</title>
-  <link rel="stylesheet" href="/assets/css/bootstrap.min.css"> <!-- Bootstrap Styles -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="/assets/css/style.css"> <!-- Custom Styles -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert -->
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout</title>
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <!-- Bootstrap Styles -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css"
+    />
+    <link rel="stylesheet" href="/assets/css/style.css" />
+    <!-- Custom Styles -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-  <!-- Page Header -->
-  <div class="page-header text-center" style="background-image: url('assets/images/page-header-bg.jpg')">
-    <div class="container">
-      <h1 class="page-title">Checkout<span>Shop</span></h1>
-    </div>
-  </div>
-
-  <!-- Breadcrumb Navigation -->
-  <nav aria-label="breadcrumb" class="breadcrumb-nav">
-    <div class="container">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/">Home</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Checkout</li>
-      </ol>
-    </div>
-  </nav>
-
-
-  <!-- Checkout Form -->
-  <div class="container my-5">
-<!-- Ordered Products Section -->
-<div class="row my-4">
-  <div class="col-lg-12">
-    <div class="card shadow">
-      <div class="card-body">
-        <h4 class="card-title mb-4">Ordered Products</h4>
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Product Name</th>
-              <th>Brand</th>
-              <th>Quantity</th>
-              <th>Price</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-             <%let grandTotal = 0 ;%>  
-             <% items.forEach(item => { %>
-              <tr>
-                <td class="product-col">
-                  <div class="product">
-                    <figure class="product-media">
-                      <a href="#">
-                        <img
-                          src="/upload/product-images/<%= item.product.productImage[0] %>"
-                          alt="Product image"
-                        />
-                      </a>
-                    </figure>
-                    <h3 class="product-title">
-                      <a href=""><%= item.product.productName %></a>
-                    </h3>
-                    <!-- End .product-title -->
-                  </div>
-                  <!-- End .product -->
-                <td><%= item.product.brand.brandName %></td>
-                <td><%= item.quantity%></td>
-                <td>₹<%=item.product.salePrice%></td>
-                <td>₹<%= item.quantity*item.product.salePrice%></td> <!-- Total = Quantity * Price -->
-              </tr>
-              <% const itemTotal =item.quantity*item.product.salePrice;
-                   grandTotal+=itemTotal
-             }) %>
-            
-          </tbody>
-          <tr class="table-info">
-            <td colspan="4" class="text-end">Grand Total</td>
-            <td><%=grandTotal%></td> <!-- Grand Total -->
-          </tr>
-        </table>
+    <!-- SweetAlert -->
+  </head>
+  <body>
+    <!-- Page Header -->
+    <div
+      class="page-header text-center"
+      style="background-image: url('assets/images/page-header-bg.jpg')"
+    >
+      <div class="container">
+        <h1 class="page-title">Checkout<span>Shop</span></h1>
       </div>
     </div>
-  </div>
-</div>
 
-    <div class="row">
-      <!-- Shipping Information Card -->
-      <div class="col-lg-6">
-        <div class="card shadow">
-          <div class="card-body">
-            <h4 class="card-title mb-4">Shipping Information</h4>
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="breadcrumb-nav">
+      <div class="container">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Checkout</li>
+        </ol>
+      </div>
+    </nav>
 
-            <!-- Saved Addresses Section -->
-            <h5 class="mb-3">Choose a saved address</h5>
-            <div id="saved-addresses">
-              <div class="card mb-3 shadow-sm">
-                <% addresses.forEach(address => { %>
-                <div class="card-body d-flex justify-content-between align-items-center">
-                  <div class="form-check">
-                    <input class="form-check-input" type="radio" name="address" id="address" value=<%= address.addressNo %> checked>
-                    <label class="form-check-label" for="address">
-                     <%= address.name %>,<%= address.city %>,<%= address.pincode %>,<%= address.state %>,<%= address.phone%>,<%= address.altPhone %>
-                    </label>
+    <!-- Checkout Form -->
+    <div class="container my-5">
+      <!-- Ordered Products Section -->
+      <div class="row my-4">
+        <div class="col-lg-12">
+          <div class="card shadow">
+            <div class="card-body">
+              <h4 class="card-title mb-4">Ordered Products</h4>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Product Name</th>
+                    <th>Brand</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% let grandTotal = 0; %>
+                  <% items.forEach(item => { %>
+                  <tr>
+                    <td class="product-col">
+                      <div class="product">
+                        <figure class="product-media">
+                          <a href="#">
+                            <img src="/upload/product-images/<%= item.product.productImage[0] %>" alt="Product image" />
+                          </a>
+                        </figure>
+                        <h3 class="product-title">
+                          <a href=""><%= item.product.productName %></a>
+                        </h3>
+                      </div>
+                    </td>
+                    <td><%= item.product.brand.brandName %></td>
+                    <td><%= item.quantity %></td>
+                  
+                    <!-- Price Column -->
+                    <td>
+                      <% 
+                        let discount = 0;
+                        let finalPrice = item.product.salePrice; // Initialize final price to sale price
+                        
+                        // Check for discount in product, category, or brand
+                        if (item.product.offer && item.product.offer.discount) {
+                          discount = item.product.offer.discount;
+                        } else if (item.product.category && item.product.category.offer && item.product.category.offer.discount) {
+                          discount = item.product.category.offer.discount;
+                        } else if (item.product.brand && item.product.brand.offer && item.product.brand.offer.discount) {
+                          discount = item.product.brand.offer.discount;
+                        }
+                  
+                        discount = parseFloat(discount) || 0; // Ensure discount is a valid number
+                        
+                        // Apply discount if present
+                        if (discount > 0) {
+                          finalPrice = item.product.salePrice - (item.product.salePrice * (discount / 100));
+                        }
+                      %>
+                  
+                      <% if (discount > 0) { %>
+                        ₹<%= finalPrice.toFixed(2) %>
+                      <% } else { %>
+                        ₹<%= item.product.salePrice.toFixed(2) %>
+                      <% } %>
+                    </td>
+                  
+                    <!-- Total Column (Discounted Total) -->
+                    <td>
+                      <% let itemTotal = finalPrice * item.quantity; %>
+                      ₹<%= itemTotal.toFixed(2) %>
+                      <% grandTotal += itemTotal; %>
+                    </td>
+                  </tr>
+                  <% }); %>
+                  
+                </tbody>
+                <% if (cart.appliedCoupon) { %>
+                <tr class="table-info">
+                  <td colspan="4" class="text-end">Coupon</td>
+                  <td>₹<%= cart.appliedCoupon.offerPrice %></td>
+                  <% grandTotal=grandTotal-cart.appliedCoupon.offerPrice %>
+                </tr>
+                <% } %>
+                <tr class="table-info">
+                  <td colspan="4" class="text-end">Grand Total</td>
+                  <td>₹<%= grandTotal.toFixed(2) %></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <!-- Shipping Information Card -->
+        <div class="col-lg-6">
+          <div class="card shadow">
+            <div class="card-body">
+              <h4 class="card-title mb-4">Shipping Information</h4>
+
+              <!-- Saved Addresses Section -->
+              <h5 class="mb-3">Choose a saved address</h5>
+              <div id="saved-addresses">
+                <div class="card mb-3 shadow-sm">
+                  <% addresses.forEach(address => { %>
+                  <div
+                    class="card-body d-flex justify-content-between align-items-center"
+                  >
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="address"
+                        id="address"
+                        value="<%= address.addressNo %>"
+                        checked
+                      />
+                      <label class="form-check-label" for="address">
+                        <%= address.name %>, <%= address.city %>, <%=
+                        address.pincode %>, <%= address.state %>, <%=
+                        address.phone %>, <%= address.altPhone %>
+                      </label>
+                    </div>
                   </div>
+                  <% }) %>
                 </div>
-                <% }) %>
+              </div>
+
+              <button id="addNewAddressBtn" class="btn btn-secondary mt-3">
+                Add New Address
+              </button>
+
+              <div id="newAddressForm" style="display: none; margin-top: 20px">
+                <h5>Enter New Address</h5>
+                <form id="addressForm">
+                  <div class="mb-3">
+                    <label for="addressType" class="form-label"
+                      >Address Type</label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="addressType"
+                      name="addressType"
+                      required
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="name" class="form-label">Name</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="name"
+                      name="name"
+                      required
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="city" class="form-label">City</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="city"
+                      name="city"
+                      required
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="landMark" class="form-label">Landmark</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="landMark"
+                      name="landMark"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="state" class="form-label">State</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="state"
+                      name="state"
+                      required
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="pincode" class="form-label">Pincode</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="pincode"
+                      name="pincode"
+                      required
+                      pattern="[0-9]{6}"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="phone" class="form-label">Phone</label>
+                    <input
+                      type="tel"
+                      class="form-control"
+                      id="phone"
+                      name="phone"
+                      required
+                      pattern="[0-9]{10}"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <label for="altPhone" class="form-label"
+                      >Alternate Phone</label
+                    >
+                    <input
+                      type="tel"
+                      class="form-control"
+                      id="altPhone"
+                      name="altPhone"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    id="addNewAddressBtn"
+                    class="btn btn-primary"
+                  >
+                    Save Address
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Method & Billing Information Card -->
+        <div class="col-lg-6">
+          <div class="card shadow">
+            <div class="card-body">
+              <h4 class="card-title mb-4 pt-2">Payment Method</h4>
+
+              <!-- Radio Button for Cash on Delivery -->
+              <% if (grandTotal<=1000) { %>
+              <div
+                class="form-check form-check-custom d-flex align-items-center justify-content-between mt-3"
+              >
+                <label
+                  class="form-check-label d-flex align-items-center"
+                  for="paymentCOD"
+                >
+                  <i class="bi bi-cash me-2"></i>
+                  <span>Cash on Delivery</span>
+                </label>
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="paymentMethod"
+                  id="paymentCOD"
+                  value="cod"
+                />
+              </div>
+
+              <% } %>
+
+              <!-- Radio Button for UPI -->
+              <div
+                class="form-check form-check-custom d-flex align-items-center justify-content-between mt-3"
+              >
+                <label
+                  class="form-check-label d-flex align-items-center"
+                  for="razorPay"
+                >
+                  <i class="bi bi-phone me-2"></i>
+                  <span>Razorpay</span>
+                </label>
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="paymentMethod"
+                  id="razorPay"
+                  value="razorPay"
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Payment Method & Billing Information Card -->
-      <div class="col-lg-6">
-        <div class="card shadow ">
-          <div class="card-body">
-            <h4 class="card-title mb-4 pt-2">Payment Method</h4>
-
-            <!-- Radio Button for Credit/Debit Card -->
-            <div class="form-check form-check-custom d-flex align-items-center justify-content-between">
-              <label class="form-check-label d-flex align-items-center" for="paymentCard">
-                <i class="bi bi-credit-card me-2"></i> 
-                <span>Credit/Debit Card</span> <!-- Space between icon and text -->
-              </label>
-              <input class="form-check-input" type="radio" name="paymentMethod" id="paymentCard" value="card" checked>
-            </div>
-
-            <!-- Radio Button for Cash on Delivery -->
-            <div class="form-check form-check-custom d-flex align-items-center justify-content-between mt-3">
-              <label class="form-check-label d-flex align-items-center" for="paymentCOD">
-                <i class="bi bi-cash me-2"></i> 
-                <span>Cash on Delivery</span> <!-- Space between icon and text -->
-              </label>
-              <input class="form-check-input" type="radio" name="paymentMethod" id="paymentCOD" value="cod">
-            </div>
-
-            <!-- Radio Button for UPI -->
-            <div class="form-check form-check-custom d-flex align-items-center justify-content-between mt-3">
-              <label class="form-check-label d-flex align-items-center" for="paymentUPI">
-                <i class="bi bi-phone  me-2"></i> 
-                <span>UPI</span> <!-- Space between icon and text -->
-              </label>
-              <input class="form-check-input" type="radio" name="paymentMethod" id="paymentUPI" value="upi">
-            </div>
-          </div>
-        </div>
+      <!-- Submit Button -->
+      <div class="text-center">
+        <button
+          type="submit"
+          id="placeOrder"
+          class="btn btn-primary btn-lg mt-2"
+        >
+          Place Order
+        </button>
       </div>
     </div>
 
-    <!-- Submit Button -->
-    <div class="text-center">
-      <button type="submit"  id="placeOrder" class="btn btn-primary btn-lg mt-2 ">Place Order</button>
-    </div>
-  </div>
+    <script>
+      document
+        .getElementById("addNewAddressBtn")
+        .addEventListener("click", function () {
+          document.getElementById("newAddressForm").style.display = "block";
+        });
 
-  <!-- Add your scripts at the bottom of the page -->
-  <!-- Add custom styles -->
-  <style>
-    .form-check-custom {
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      transition: background-color 0.3s ease;
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+      document
+        .getElementById("addressForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
 
-    .form-check-custom:hover {
-      background-color: #f0f0f0;
-    }
+          // Retrieve values from the form fields
+          const addressType = document.getElementById("addressType").value;
+          const name = document.getElementById("name").value;
+          const city = document.getElementById("city").value;
+          const landMark = document.getElementById("landMark").value; // New field
+          const state = document.getElementById("state").value;
+          const pincode = document.getElementById("pincode").value;
+          const phone = document.getElementById("phone").value;
+          const altPhone = document.getElementById("altPhone").value;
 
-    .form-check-label {
-      display: flex;
-      align-items: center;
-    }
-
-    .form-check-label i {
-      font-size: 1.2rem;
-      color: #6c757d;
-    }
-
-    input#paymentUPI,
-    input#paymentCard,
-    input#paymentCOD {
-      margin-left: 45rem; /* Adjust spacing between radio button and label */
-    }
-
-    .me-2 {
-      margin-right: 0.5rem; /* Space between icon and text */
-    }
-
-    #saved-addresses .card {
-      border: 1px solid #ddd; /* Border for the address box */
-      border-radius: 8px; /* Rounded corners */
-      transition: box-shadow 0.3s ease;
-    }
-
-    #saved-addresses .card:hover {
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Shadow effect on hover */
-    }
-
-    #saved-addresses .card-body {
-      padding: 10px 20px; /* Padding inside the address box */
-    }
-
-    #saved-addresses .form-check-label {
-      margin-bottom: 0; /* Ensure label aligns properly */
-    }
-
-    input#address {
-      margin-left: -24px;
-      margin-top: 6px;
-    }
-  </style>
-  <script>
-    document.getElementById("placeOrder").addEventListener("click", placeOrder);
-    
-    function placeOrder() {
-        const selectedAddress = document.querySelector('input[name="address"]:checked').value;
-        const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
-        const grandTotal = "<%=grandTotal%>"
-        
-        console.log("Selected Address:", selectedAddress);
-        console.log("Selected Payment Method:", selectedPaymentMethod);
-    
-        fetch('/placeOrder', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ address: selectedAddress, paymentMethod: selectedPaymentMethod, grandTotal:grandTotal})
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-          if(data.success){
-            // Show success message based on payment method
-            if (selectedPaymentMethod === "card") {             
-                    window.location.href = '/payment-gateway-url'; 
-            } else if (selectedPaymentMethod === "cod") {
-                  window.location.href = "/orderSuccess"
-            } else if (selectedPaymentMethod === "upi") {
-              
-                    window.location.href = '/upi-payment-url'; 
-            
-            }
-        }
-        else{
-          Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: data.message,
-            });
-        }
-    } )
-      
-        .catch(error => {
-            console.error("Error:", error);
+          // Validate all fields
+          if (!addressType || !name || !city || !pincode || !state || !phone) {
             Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'There was an issue placing your order. Please try again.'
+              icon: "error",
+              title: "Please fill in all required fields.",
+              text: "Make sure all fields are completed before submitting.",
+              confirmButtonText: "OK",
+            });
+            return; // Prevent further submission if validation fails
+          }
+
+          // Fetch API call to save the new address
+          fetch("/saveNewAddress", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              addressType,
+              name,
+              city,
+              landMark,
+              state,
+              pincode,
+              phone,
+              altPhone,
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                // Show success alert with SweetAlert
+                Swal.fire({
+                  icon: "success",
+                  title: "Address added successfully!",
+                  text: "Your address has been added to the list.",
+                  confirmButtonText: "OK",
+                }).then(() => {
+                  // Optionally reload the addresses list here
+                  location.reload();
+                });
+              } else {
+                // Show error alert with SweetAlert
+                Swal.fire({
+                  icon: "error",
+                  title: "Failed to add address",
+                  text: "There was an error adding your address. Please try again.",
+                  confirmButtonText: "OK",
+                });
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              // Show generic error alert with SweetAlert
+              Swal.fire({
+                icon: "error",
+                title: "An error occurred",
+                text: "There was a problem while adding the address. Please try again later.",
+                confirmButtonText: "OK",
+              });
             });
         });
-    }
     </script>
-    
-</body>
+    <script>
+      document
+        .getElementById("placeOrder")
+        .addEventListener("click", placeOrder);
+
+      function placeOrder() {
+
+
+        const selectedAddress = document.querySelector(
+          'input[name="address"]:checked'
+        ).value;
+        const selectedPaymentMethod = document.querySelector(
+          'input[name="paymentMethod"]:checked'
+        ).value;
+        const grandTotal = "<%=grandTotal%>"; // Ensure that this value is passed from the server
+
+        console.log("Selected Address:", selectedAddress);
+        console.log("Selected Payment Method:", selectedPaymentMethod);
+
+        if (selectedPaymentMethod === "cod") {
+          fetch("/placeOrder", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              address: selectedAddress,
+              paymentMethod: selectedPaymentMethod,
+              grandTotal: grandTotal,
+            }),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Network response was not ok");
+              }
+              return response.json();
+            })
+            .then((data) => {
+              if (data.success) {
+                window.location.href = "/orderSuccess"; // Redirect to order success page
+              } else {
+                Swal.fire({
+                  icon: "error",
+                  title: "Error",
+                  text: data.message,
+                });
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "There was an issue placing your order. Please try again.",
+              });
+            });
+        }
+
+        if (selectedPaymentMethod === "razorPay") {
+          // Sending a request to create an order
+          fetch("/createOrder", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json", // Ensure proper content type
+            },
+            body: JSON.stringify({
+              address: selectedAddress,
+              paymentMethod: selectedPaymentMethod,
+              grandTotal: grandTotal,
+            }),
+          })
+            .then((response) => response.json()) // Parse the JSON response
+            .then((res) => {
+              if (res.success) {
+                // If order creation was successful
+                const options = {
+                  key: res.key_id, // Razorpay API Key
+                  amount: res.amount, // Total amount (in paise)
+                  currency: "INR", // Currency (Indian Rupee)
+                  name: res.product_name, // Product name
+                  description: res.description,
+                  image: "https://dummyimage.com/600x400/000/fff", 
+                  order_id: res.order_id,
+                  orderId:res.orderId,
+                  handler: function (response) {
+                    fetch("/updateStockAndClear", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                       orderId:options.orderId
+                      }),
+                    })
+                      .then((res) => res.json())
+                      .then((data) => {
+                        if (data.success) {
+                          window.location.href = "/orderSuccess";
+                        } else {
+                          alert("Error: " + data.message);
+                        }
+                      })
+                      .catch((error) => {
+                        console.error("Error completing operation:", error);
+                        alert(
+                          "An unexpected error occurred. Please try again."
+                        );
+                      });
+                  },
+                  prefill: {
+                    contact: res.contact,
+                    name: res.name,
+                    email: res.email,
+                  },
+                  notes: {
+                    address: res.address,
+                  },
+                  theme: {
+                    color: "#F37254",
+                  },
+                };
+
+                var rzp = new Razorpay(options); // Pass options to Razorpay instance
+                rzp.open(); // Open the Razorpay payment modal
+              } else {
+                alert("Error creating order: " + res.message); // Display error if order creation fails
+              }
+            })
+            .catch((error) => {
+              alert("An error occurred: " + error.message); // Handle any fetch errors
+            });
+        }
+      }
+    </script>
+  </body>
 </html>

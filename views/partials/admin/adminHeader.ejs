@@ -8,11 +8,11 @@
     <meta name="keywords" content="HTML5 Template">
     <meta name="description" content="Molla - Bootstrap eCommerce Template">
     <meta name="author" content="p-themes">
+    
     <!-- Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" href="assets/images/icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/images/icons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/images/icons/favicon-16x16.png">
-    <!-- <link rel="manifest" href="assets/images/icons/site.html"> -->
     <link rel="mask-icon" href="assets/images/icons/safari-pinned-tab.svg" color="#666666">
     <link rel="shortcut icon" href="assets/images/icons/favicon.ico">
     <meta name="apple-mobile-web-app-title" content="Molla">
@@ -20,6 +20,7 @@
     <meta name="msapplication-TileColor" content="#cc9966">
     <meta name="msapplication-config" content="assets/images/icons/browserconfig.xml">
     <meta name="theme-color" content="#ffffff">
+    
     <!-- Plugins CSS File -->
     <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
     <!-- Main CSS File -->
@@ -27,28 +28,21 @@
     <!-- sweetAlert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-
-
-    
     <style>
         /* Base CSS */
         .sf-with-ul {
-            color: #ffffff; /* Default color */
+            color: #ffffff;
             text-decoration: none;
-            transition: all 0.3s ease-in-out; 
+            transition: all 0.3s ease-in-out;
         }
 
-        
         .sf-with-ul:hover {
-            color: #ff6347; 
-            
+            color: #ff6347;
         }
 
-        
         .sf-with-ul.active {
-            color: #ff6347; 
+            color: #ff6347;
         }
-
     </style>
 </head>
 <body>
@@ -66,11 +60,13 @@
                             <img src="/assets/images/Beep.png" alt="Beep Logo" width="105" height="25">
                         </a>
 
+                        <!-- Navigation Links -->
                         <a href="/admin/dashboard" class="sf-with-ul <%= currentPath === '/admin/dashboard' ? 'active' : '' %>">Home</a>
                         <a href="/admin/brand" class="sf-with-ul <%= currentPath === '/admin/brand' ? 'active' : '' %>">Brand</a>
                         <a href="/admin/category" class="sf-with-ul <%= currentPath === '/admin/category' ? 'active' : '' %>">Categories</a>
                         <a href="/admin/products" class="sf-with-ul <%= currentPath === '/admin/products' ? 'active' : '' %>">Products</a>
-                        <a href="/admin/coupons" class="sf-with-ul <%= currentPath === '/admin/coupons' ? 'active' : '' %>">Coupons</a>
+                        <a href="/admin/coupon" class="sf-with-ul <%= currentPath === '/admin/coupon' ? 'active' : '' %>">Coupons</a>
+                        <a href="/admin/offers" class="sf-with-ul <%= currentPath === '/admin/offers' ? 'active' : '' %>">Offers</a>
                         <a href="/admin/users" class="sf-with-ul <%= currentPath === '/admin/users' ? 'active' : '' %>">Users</a>
                         <a href="/admin/orders" class="sf-with-ul <%= currentPath === '/admin/orders' ? 'active' : '' %>">Orders</a>
                         <a href="/admin/report" class="sf-with-ul <%= currentPath === '/admin/report' ? 'active' : '' %>">Report</a>

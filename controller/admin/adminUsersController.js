@@ -1,7 +1,10 @@
+const { session } = require("passport");
 const User = require("../../Models/userSchema");
 
 const loadAdminUsers = async (req, res) => {
     try {
+        console.log(req.session);
+        
         
         const search = req.query.search || "";
         const page = parseInt(req.query.page, 10) || 1;
@@ -50,14 +53,16 @@ const blockUser=async(req,res)=>{
         if(userdata){
             var resp = await User.updateOne({_id:userId},{$set:{isBlocked:true}})
             if(resp){
-                req.session.destroy((err)=>{
-                    if(err){
-                        console.log("there was an error occured while destroying session")
-                        res.status(500).send("Failed To Destroy Session")
-                    }
-                    res.clearCookie("connect.sid");
-                    
-                })
+               delete req.session.passport
+               delete req.session.user
+               req.session.save((err)=>{
+                if(err){
+                    console.error("Error Saving session",err)
+                }else{
+                    console.log("session updated succesfully.")
+                    res.status(200).json({success:true})
+                }
+               })
             }
         }else{
             console.log("something went wrong");
@@ -70,6 +75,7 @@ const unblockUser=async(req,res)=>{
         const userdata = await User.findOne({_id:userId})
         if(userdata){
             var resp = await User.updateOne({_id:userId},{$set:{isBlocked:false}})
+            res.status(200).json({success:true})
         }else{
             console.log("something went wrong");
         }
@@ -83,7 +89,10 @@ const deleteUser = async (req,res)=>{
         console.log("something went wrong");
     }
     
+
 }
+
+
 
 module.exports = {
     loadAdminUsers,

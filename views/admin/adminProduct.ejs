@@ -41,6 +41,7 @@
             <th>Price</th>
             <th>Quantity</th>
             <th>Status</th>
+            <th>AppliedOffer</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -53,6 +54,7 @@
             <td><%= product.salePrice %></td>
             <td><%= product.quantity %></td>
             <td><%= product.status %></td>
+            <td><%= product.offer ? product.offer.title :"none"%></td>
             <td>
               <button class="btn btn-warning btn-sm" onclick="window.location.href='/admin/editProduct/<%= product._id %>'">Edit</button>
       <% if (product.isBlocked) { %> 

@@ -8,18 +8,25 @@ const auth = require("../Middleware/adminAuth");
 
 //Controllers
 const adminController = require("../controller/admin/adminController");
+const adminDashBoardController = require("../controller/admin/adminDashboard")
 const adminCategoryController = require("../controller/admin/adminCategoryController");
 const adminUsersController = require("../controller/admin/adminUsersController");
 const adminBrandController = require("../controller/admin/adminBrandController");
 const adminProductController = require("../controller/admin/adminProductController");
 const adminOrderController = require("../controller/admin/adminOrderController")
+const adminCouponController = require("../controller/admin/adminCouponController")
+const offerController = require("../controller/admin/offerController");
+const reportController = require("../controller/admin/reportController")
 
 
 // Admin Authentication & Dashboard Routes
 Router.get("/admin", auth.isAdminLoggedOut, adminController.loadAdminLogin);
 Router.post("/admin", adminController.verifyAdmin);
 Router.get("/admin/dashboard", auth.isAdminLoggedIn, (req, res) => {
-  adminController.loadAdminDashboard(req, res, { currentPage: "dashboard" });
+  adminDashBoardController.loadDashboard(req, res, { currentPage: "dashboard" });
+});
+Router.get("/admin/dashboardUpdate",auth.isAdminLoggedIn,(req, res) => {
+  adminDashBoardController.updateChart(req, res, { currentPage: "dashboard" });
 });
 Router.get("/adminLogout", auth.isAdminLoggedIn, (req, res) => {
   adminController.adminLogout(req, res, { currentPage: "" });
@@ -52,6 +59,9 @@ Router.post("/admin/addBrand", auth.isAdminLoggedIn, adminBrandController.addBra
 Router.post("/admin/blockBrand", auth.isAdminLoggedIn, adminBrandController.blockBrand);
 Router.post("/admin/unblockBrand", auth.isAdminLoggedIn, adminBrandController.unblockBrand);
 Router.post("/admin/deleteBrand", auth.isAdminLoggedIn, adminBrandController.deleteBrand);
+Router.get("/admin/editBrand/:id",auth.isAdminLoggedIn,adminBrandController.loadEditBrand)
+Router.post("/admin/editBrand/:id",auth.isAdminLoggedIn,adminBrandController.EditBrand)
+
 
 // Product Management Routes
 Router.get("/admin/products", auth.isAdminLoggedIn, adminProductController.loadProduct);
@@ -70,6 +80,29 @@ Router.post("/admin/order/update/:id", auth.isAdminLoggedIn, adminOrderControlle
 Router.post('/admin/cancelOrder',auth.isAdminLoggedIn,adminOrderController.cancelOrder);
 Router.post('/admin/deleteOrder',auth.isAdminLoggedIn,adminOrderController.deleteOrder);
 
+//Coupon Managment Routes
+Router.get('/admin/coupon', auth.isAdminLoggedIn, adminCouponController.loadCouponsPage);
+Router.get('/admin/coupon/add', auth.isAdminLoggedIn, adminCouponController.loadAddCouponPage);
+Router.post('/admin/coupon/add', auth.isAdminLoggedIn, adminCouponController.createCoupon);
+Router.get('/admin/coupon/update/:id', auth.isAdminLoggedIn, adminCouponController.loadUpdateCouponPage); 
+Router.post('/admin/coupon/update/:id', auth.isAdminLoggedIn, adminCouponController.updateCoupon); 
+Router.post('/admin/coupon/delete/:id', auth.isAdminLoggedIn, adminCouponController.deleteCoupon);
+Router.post('/admin/coupon/deactivate/:id',auth.isAdminLoggedIn,adminCouponController.deactivateCoupon) 
+Router.post('/admin/coupon/activate/:id',auth.isAdminLoggedIn,adminCouponController.activateCoupon) 
 
-// Export Router
+//Offer Managment Routes 
+Router.get('/admin/offers',auth.isAdminLoggedIn,offerController.getOffers);
+Router.get('/admin/offer/add',auth.isAdminLoggedIn,offerController.loadAddOffer)
+Router.post('/admin/offer/add', offerController.addOffer);
+Router.get('/admin/offer/update/:id',auth.isAdminLoggedIn, offerController.loadEditOffer);
+Router.put('/admin/offer/update/:id', offerController.editOffer);
+Router.post('/admin/offer/delete/:id', offerController.deleteOffer);
+Router.post('/admin/offer/toggle/:id', offerController.toggleOffer);
+
+//Sales Report Routes 
+
+Router.get('/admin/report',auth.isAdminLoggedIn,reportController.loadReportPage)
+Router.post('/admin/sales-report/pdf',auth.isAdminLoggedIn,reportController.downloadPDF);
+Router.post('/admin/sales-report/excel',auth.isAdminLoggedIn,reportController.downloadExcel);
+
 module.exports = Router;
