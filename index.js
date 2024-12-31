@@ -34,7 +34,7 @@ app.set("views", [
   path.join(__dirname, "views/User"),
   path.join(__dirname, "views/admin"),
 ]);
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "Public")));
 
 app.use((req, res, next) => {
   res.locals.currentPath = req.path;
